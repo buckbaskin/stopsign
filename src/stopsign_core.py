@@ -2,6 +2,7 @@
 
 from collections import namedtuple
 import cv2
+import numpy as np
 
 Reading = namedtuple('Reading', ['bearing', 'size', 'r', 'g', 'b', 'a'])
 
@@ -10,10 +11,12 @@ class StopsignFinder(object):
         self.cap = cv2.VideoCapture(0) # create video capture object
 
     def check_for_stopsign(self, unwrap=True, img=None):
+        print('1 type(img) -> %s' % (type(img),))
         if img is None:
             img = self.retrieve_image()
         if unwrap:
             img = self.unwrap_image(img)
+        print('2 type(img) -> %s' % (type(img),))
         readings = self.panorama_to_readings(img)
         return self.has_stopsign(readings)
 
@@ -95,15 +98,12 @@ class StopsignFinder(object):
             keypoints_sum += len(keypoints)
 
             for blob in keypoints:
-                blobs.append(blob_to_msg(img, blob))
+                blobs.append(self.blob_to_rd(img, blob))
 
-        print('\nblob msgs '+str(len(blobs)))
-        
-        # TODO convert blobs to readings
+        return blobs
 
-        list_of_readings = []
-        list_of_readings.append(Reading(0, 1, 0, 0, 0, 0))
-        return list_of_readings
+    def blob_to_rd(self, img, blob):
+        return Reading(0, 1, 0, 0, 0, 0)
 
     def has_stopsign(self, readings):
         return False
