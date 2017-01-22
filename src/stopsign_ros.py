@@ -11,7 +11,7 @@ out = rospy.Publisher('stopsign', Bool, queue_size=1)
 
 def active_image():
     mess = Bool()
-    mess.data = finder.has_stopsign()
+    mess.data = finder.has_stopsign(unwrap=False, img=None)
     out.publish(mess)
 
 def image_cb(image_msg):
@@ -26,7 +26,7 @@ def image_cb(image_msg):
     try:
         cv_image = bridge.imgmsg_to_cv2(image_msg, desired_encoding='passthrough')
         mess = Bool()
-        mess.data = finder.has_stopsign(img=cv_image)
+        mess.data = finder.has_stopsign(unwrap=False, img=cv_image)
         out.publish(mess)
     except CvBridgeError as cvbe:
         print(cvbe)
