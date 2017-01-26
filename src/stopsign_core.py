@@ -10,7 +10,7 @@ class StopsignFinder(object):
     def __init__(self):
         self.cap = cv2.VideoCapture(0) # create video capture object
 
-    def check_for_stopsign(self, unwrap=True, img=None, debug=False):
+    def check_for_stopsign(self, unwrap=True, img=None, debug=False, save=False):
         if debug:
             print('1 type(img) -> %s' % (type(img),))
         if img is None:
@@ -19,7 +19,7 @@ class StopsignFinder(object):
             img = self.unwrap_image(img, debug=debug)
         if debug:
             print('2 type(img) -> %s' % (type(img),))
-        readings = self.panorama_to_readings(img, debug=debug)
+        readings = self.panorama_to_readings(img, debug=debug, save=save)
         return self.has_stopsign(readings, debug=debug)
 
     def retrieve_image(self, debug=False):
@@ -31,11 +31,15 @@ class StopsignFinder(object):
         #   360 degree image
         return donut
 
-    def panorama_to_readings(self, img, debug=False):
+    def panorama_to_readings(self, img, debug=False, save=False):
         # TODO(buckbaskin): given an unwrapped panorama, find blobs using opencv
         #   and convert their position in the image to a reading (bearing, size,
         #   color)
         img = cv2.blur(img, (5,5,))
+        if save and isinstance(save, str):
+            loc = './processed/%s_orig.jpg' % (save,)
+            print('cv2.imwrite(%s, img)' % (loc,))
+            cv2.imwrite(loc, img)
         if debug:
             cv2.imshow('blurred image', img)
             cv2.waitKey()
@@ -53,10 +57,10 @@ class StopsignFinder(object):
         # res_array.append(cv2.bitwise_and(img, img, mask=mask))
 
         # create a wrapping red filter (wraps from 160-20) (needs adjustment)
-        low_sat = 200 # too grey'd out
+        low_sat = 120 # too grey'd out
         hi_sat = 255
-        low_val = 30 # too dark
-        hi_val = 205 # too bright
+        low_val = 140 # too dark
+        hi_val = 210 # too bright
 
         lower_limit1 = np.array([170, low_sat, low_val])
         upper_limit1 = np.array([180, hi_sat, hi_val])
@@ -73,6 +77,8 @@ class StopsignFinder(object):
         if debug:
             cv2.imshow('result', res_array[-1])
             cv2.waitKey()
+        if save and isinstance(save, str):
+            cv2.imwrite('processed/'+save+'_mask.jpg', res_array[-1])
 
         # find blobs in all the images!
         # Set up the detector with default parameters
@@ -118,6 +124,9 @@ class StopsignFinder(object):
             if debug:
                 img_with_keypoints = cv2.drawKeypoints(img, new_keyp, np.array([]), (0,0,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
                 cv2.imshow('Img Keypoints '+str(i), img_with_keypoints)
+            if save and isinstance(save, str):
+                img_with_keypoints = cv2.drawKeypoints(img, new_keyp, np.array([]), (0,0,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+                cv2.imwrite('processed/'+save+'_keyp.jpg', img)
             if debug:
                 mask_with_keypoints = cv2.drawKeypoints(mask_array[i], new_keyp, np.array([]), (0,0,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
                 cv2.imshow('Mask Keypoints '+str(i), mask_with_keypoints)
