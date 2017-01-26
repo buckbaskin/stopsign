@@ -83,13 +83,14 @@ class StopsignFinder(object):
         # find blobs in all the images!
         # Set up the detector with default parameters
         params = cv2.SimpleBlobDetector_Params()
-        params.filterByArea = False
-        # params.maxArea = 50000000
-        params.minArea = 100
-
+        
+        # params.minThreshold = 10
         # params.maxThreshold = 255
-        # params.minThreshold = 0
 
+        params.filterByArea = False
+        params.minArea = 100
+        # params.maxArea = 50000000
+        
         params.filterByConvexity = False
         params.minConvexity = .00001
         params.maxConvexity = 1.0
@@ -111,28 +112,49 @@ class StopsignFinder(object):
             cv2.waitKey()
 
         for i in range(0,len(mask_array)):
-            img = cv2.bitwise_not(mask_array[i])
+            img_not = cv2.bitwise_not(mask_array[i])
             
-            keypoints = detector.detect(img)
+            keyp_not = detector.detect(img_not)
 
             new_keyp = []
-            for blob in keypoints:
-                if blob.size > 10:
-                    new_keyp.append(blob)
-                    blobs.append(self.blob_to_rd(img, blob))
 
             if debug:
-                img_with_keypoints = cv2.drawKeypoints(img, new_keyp, np.array([]), (0,0,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
-                cv2.imshow('Img Keypoints '+str(i), img_with_keypoints)
-            if save and isinstance(save, str):
-                img_with_keypoints = cv2.drawKeypoints(img, new_keyp, np.array([]), (0,0,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
-                cv2.imwrite('processed/'+save+'_keyp.jpg', img)
-            if debug:
-                mask_with_keypoints = cv2.drawKeypoints(mask_array[i], new_keyp, np.array([]), (0,0,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
-                cv2.imshow('Mask Keypoints '+str(i), mask_with_keypoints)
-            if debug:
+                # img_with_keypoints = cv2.drawKeypoints(mask_array[i], keyp_mask, np.array([]), (0,0,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+                # cv2.imshow('Positive with keyp', img_with_keypoints)
+                # cv2.waitKey()
+                # cv2.destroyAllWindows()
+                cv2.imshow('img_not', img_not)
+                cv2.waitKey()
+                print('len(keyp_not): %d' % (len(keyp_not),))
+                for point in keyp_not:
+                    if point.size > 0.1:
+                        new_keyp.append(point)
+                not_with_keypoints = cv2.drawKeypoints(img_not, new_keyp, np.array([]), (0,0,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+                cv2.imshow('Negative with keyp', not_with_keypoints)
                 cv2.waitKey()
                 cv2.destroyAllWindows()
+                import sys
+                sys.exit(1)
+
+
+            # new_keyp = []
+            # for blob in keypoints:
+            #     if blob.size > 10:
+            #         new_keyp.append(blob)
+            #         blobs.append(self.blob_to_rd(img, blob))
+
+            # if debug:
+            #     img_with_keypoints = cv2.drawKeypoints(img, new_keyp, np.array([]), (0,0,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+            #     cv2.imshow('Img Keypoints '+str(i), img_with_keypoints)
+            # if save and isinstance(save, str):
+            #     img_with_keypoints = cv2.drawKeypoints(img, new_keyp, np.array([]), (0,0,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+            #     cv2.imwrite('processed/'+save+'_keyp.jpg', img)
+            # if debug:
+            #     mask_with_keypoints = cv2.drawKeypoints(mask_array[i], new_keyp, np.array([]), (0,0,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+            #     cv2.imshow('Mask Keypoints '+str(i), mask_with_keypoints)
+            # if debug:
+            #     cv2.waitKey()
+            #     cv2.destroyAllWindows()
 
         return blobs
 
