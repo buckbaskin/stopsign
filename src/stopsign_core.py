@@ -11,12 +11,14 @@ class StopsignFinder(object):
         self.cap = cv2.VideoCapture(0) # create video capture object
 
     def check_for_stopsign(self, unwrap=True, img=None, debug=False):
-        print('1 type(img) -> %s' % (type(img),))
+        if debug:
+            print('1 type(img) -> %s' % (type(img),))
         if img is None:
             img = self.retrieve_image(debug=debug)
         if unwrap:
             img = self.unwrap_image(img, debug=debug)
-        print('2 type(img) -> %s' % (type(img),))
+        if debug:
+            print('2 type(img) -> %s' % (type(img),))
         readings = self.panorama_to_readings(img, debug=debug)
         return self.has_stopsign(readings, debug=debug)
 
@@ -98,13 +100,14 @@ class StopsignFinder(object):
 
         blobs = []
 
+        if debug:
+            cv2.destroyAllWindows()
+            cv2.waitKey()
+
         for i in range(0,len(mask_array)):
             img = cv2.bitwise_not(mask_array[i])
             
             keypoints = detector.detect(img)
-
-            cv2.destroyAllWindows()
-            cv2.waitKey()
 
             new_keyp = []
             for blob in keypoints:
@@ -115,10 +118,12 @@ class StopsignFinder(object):
             if debug:
                 img_with_keypoints = cv2.drawKeypoints(img, new_keyp, np.array([]), (0,0,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
                 cv2.imshow('Img Keypoints '+str(i), img_with_keypoints)
+            if debug:
                 mask_with_keypoints = cv2.drawKeypoints(mask_array[i], new_keyp, np.array([]), (0,0,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
                 cv2.imshow('Mask Keypoints '+str(i), mask_with_keypoints)
-            cv2.waitKey()
-            cv2.destroyAllWindows()
+            if debug:
+                cv2.waitKey()
+                cv2.destroyAllWindows()
 
         return blobs
 
