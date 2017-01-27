@@ -14,7 +14,7 @@ params.minThreshold = 0
 params.maxThreshold = 50
 
 params.filterByArea = True
-params.minArea = 10
+params.minArea = 100
 params.maxArea = 700000
 
 params.filterByInertia = False
