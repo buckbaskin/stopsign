@@ -31,6 +31,34 @@ class StopsignFinder(object):
         #   360 degree image
         return donut
 
+    def blob_detect(self, black_and_white, debug=False):
+        # find blobs in all the images!
+        # Set up the detector with default parameters
+        params = cv2.SimpleBlobDetector_Params()
+        
+        # params.minThreshold = 10
+        # params.maxThreshold = 255
+
+        params.filterByArea = False
+        params.minArea = 100
+        # params.maxArea = 50000000
+        
+        params.filterByConvexity = False
+        params.minConvexity = .00001
+        params.maxConvexity = 1.0
+
+        params.filterByCircularity = False
+        params.minCircularity = .00001
+        params.maxCircularity = 1.0
+
+        params.filterByColor = False
+
+        detector = cv2.SimpleBlobDetector(params)
+
+        keypoints = detector.detect(black_and_white)
+
+        return keypoints
+
     def panorama_to_readings(self, img, debug=False, save=False):
         # TODO(buckbaskin): given an unwrapped panorama, find blobs using opencv
         #   and convert their position in the image to a reading (bearing, size,
@@ -80,32 +108,7 @@ class StopsignFinder(object):
         if save and isinstance(save, str):
             cv2.imwrite('processed/'+save+'_mask.jpg', res_array[-1])
 
-        # find blobs in all the images!
-        # Set up the detector with default parameters
-        params = cv2.SimpleBlobDetector_Params()
         
-        # params.minThreshold = 10
-        # params.maxThreshold = 255
-
-        params.filterByArea = False
-        params.minArea = 100
-        # params.maxArea = 50000000
-        
-        params.filterByConvexity = False
-        params.minConvexity = .00001
-        params.maxConvexity = 1.0
-
-        params.filterByCircularity = False
-        params.minCircularity = .00001
-        params.maxCircularity = 1.0
-
-        params.filterByColor = False
-
-        detector = cv2.SimpleBlobDetector(params)
-
-        keypoints_sum = 0
-
-        blobs = []
 
         if debug:
             cv2.destroyAllWindows()
@@ -114,7 +117,7 @@ class StopsignFinder(object):
         for i in range(0,len(mask_array)):
             img_not = cv2.bitwise_not(mask_array[i])
             
-            keyp_not = detector.detect(img_not)
+            keyp_not = self.blob_detect(img_not)
 
             new_keyp = []
 
