@@ -11,7 +11,7 @@ out = rospy.Publisher('stopsign', Bool, queue_size=1)
 
 def active_image():
     mess = Bool()
-    mess.data = finder.has_stopsign(unwrap=False, img=None)
+    mess.data = finder.check_for_stopsign(unwrap=False, img=None, debug=False, save=False)
     out.publish(mess)
 
 def image_cb(image_msg):
