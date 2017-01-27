@@ -13,7 +13,7 @@ img_names = ['2mLeft.jpg', '2mRight.jpg', '3mLeft.jpg', '3mRight.jpg', '4mLeft.j
 time_deltas = 0.0
 img_count = len(img_names)
 
-DEBUG = True
+DEBUG = False
 SAVE = True
 
 for img_name in img_names:
