@@ -10,6 +10,26 @@ class StopsignFinder(object):
     def __init__(self):
         self.cap = cv2.VideoCapture(0) # create video capture object
 
+        self.params = cv2.SimpleBlobDetector_Params()
+
+        self.params.filterByConvexity = False
+        self.params.filterByCircularity = False
+
+        self.params.filterByColor = True
+        self.params.minThreshold = 0
+        self.params.maxThreshold = 50
+
+        self.params.filterByArea = True
+        self.params.minArea = 1000
+        self.params.maxArea = 700000
+
+        self.params.filterByInertia = True
+        self.params.minInertiaRatio = 0.05
+        self.params.minDistBetweenBlobs = 5.0
+
+        self.detector = cv2.SimpleBlobDetector(self.params)
+
+
     def check_for_stopsign(self, unwrap=True, img=None, debug=False, save=False):
         if debug:
             print('1 type(img) -> %s' % (type(img),))
@@ -32,30 +52,18 @@ class StopsignFinder(object):
         return donut
 
     def blob_detect(self, black_and_white, debug=False):
-        # find blobs in all the images!
-        # Set up the detector with default parameters
-        params = cv2.SimpleBlobDetector_Params()
-        
-        # params.minThreshold = 10
-        # params.maxThreshold = 255
-
-        params.filterByArea = False
-        params.minArea = 100
-        # params.maxArea = 50000000
-        
-        params.filterByConvexity = False
-        params.minConvexity = .00001
-        params.maxConvexity = 1.0
-
-        params.filterByCircularity = False
-        params.minCircularity = .00001
-        params.maxCircularity = 1.0
-
-        params.filterByColor = False
-
-        detector = cv2.SimpleBlobDetector(params)
-
-        keypoints = detector.detect(black_and_white)
+        im = black_and_white
+        # Detect blobs.
+        keypoints = self.detector.detect(im)
+         
+        if debug:
+            # Draw detected blobs as red circles.
+            # cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS ensures the size of the circle corresponds to the size of blob
+            im_with_keypoints = cv2.drawKeypoints(im, keypoints, np.array([]), (0,0,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+             
+            # Show keypoints
+            cv2.imshow("Keypoints", im_with_keypoints)
+            cv2.waitKey(0)
 
         return keypoints
 
