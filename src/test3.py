@@ -17,8 +17,8 @@ params.filterByArea = True
 params.minArea = 100
 params.maxArea = 700000
 
-params.filterByInertia = False
-params.minInertiaRatio = 0.001
+params.filterByInertia = True
+params.minInertiaRatio = 0.05
 print('inertia')
 print(params.minInertiaRatio)
 print(params.maxInertiaRatio)
