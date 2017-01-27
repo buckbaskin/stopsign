@@ -26,7 +26,7 @@ def image_cb(image_msg):
     try:
         cv_image = bridge.imgmsg_to_cv2(image_msg, desired_encoding='passthrough')
         mess = Bool()
-        mess.data = finder.has_stopsign(unwrap=False, img=cv_image)
+        mess.data = finder.check_for_stopsign(unwrap=False, img=cv_image, debug=False, save=False)
         out.publish(mess)
     except CvBridgeError as cvbe:
         print(cvbe)
