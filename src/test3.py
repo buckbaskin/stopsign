@@ -14,7 +14,7 @@ params.minThreshold = 0
 params.maxThreshold = 50
 
 params.filterByArea = True
-params.minArea = 100
+params.minArea = 1000
 params.maxArea = 700000
 
 params.filterByInertia = True
@@ -23,7 +23,7 @@ print('inertia')
 print(params.minInertiaRatio)
 print(params.maxInertiaRatio)
 
-params.minDistBetweenBlobs = 1.0
+params.minDistBetweenBlobs = 5.0
 
 # for attr in ['blobColor', 'filterByArea', 'filterByCircularity', 'filterByColor', 'filterByConvexity', 'filterByInertia', 'maxArea', 'maxCircularity', 'maxConvexity', 'maxInertiaRatio', 'maxThreshold', 'minArea', 'minCircularity', 'minConvexity', 'minDistBetweenBlobs', 'minInertiaRatio', 'minRepeatability', 'minThreshold', 'thresholdStep']:
 #     print(attr)
