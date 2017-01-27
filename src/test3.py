@@ -3,7 +3,7 @@ import numpy as np;
  
 # Read image
 # im = cv2.imread("images/blob3.jpg", cv2.IMREAD_GRAYSCALE)
-im = cv2.imread("processed/2mRightv1_keyp.jpg", cv2.IMREAD_GRAYSCALE)
+im = cv2.imread("processed/3mLeftv1_keyp.jpg", cv2.IMREAD_GRAYSCALE)
  
 params = cv2.SimpleBlobDetector_Params()
 
