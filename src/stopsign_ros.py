@@ -7,12 +7,15 @@ from std_msgs.msg import Bool
 
 finder = StopsignFinder()
 
-out = rospy.Publisher('stopsign', Bool, queue_size=1)
+OUT = rospy.Publisher('stopsign', Bool, queue_size=1)
+
+CAP = cv2.VideoCapture(0)
 
 def active_image():
+    cv_image = CAP.read()
     mess = Bool()
-    mess.data = finder.check_for_stopsign(unwrap=False, img=None, debug=False, save=False)
-    out.publish(mess)
+    mess.data = finder.check_for_stopsign(unwrap=False, img=cv_image, debug=False, save=False)
+    OUT.publish(mess)
 
 def image_cb(image_msg):
     header = image_msg.header
@@ -27,7 +30,7 @@ def image_cb(image_msg):
         cv_image = bridge.imgmsg_to_cv2(image_msg, desired_encoding='passthrough')
         mess = Bool()
         mess.data = finder.check_for_stopsign(unwrap=False, img=cv_image, debug=False, save=False)
-        out.publish(mess)
+        OUT.publish(mess)
     except CvBridgeError as cvbe:
         print(cvbe)
     
