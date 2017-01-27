@@ -52,15 +52,20 @@ class StopsignFinder(object):
         return donut
 
     def blob_detect(self, black_and_white, debug=False):
-        im = black_and_white
         # Detect blobs.
-        keypoints = self.detector.detect(im)
-         
+        keypoints = self.detector.detect(black_and_white)
+
         if debug:
             # Draw detected blobs as red circles.
-            # cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS ensures the size of the circle corresponds to the size of blob
-            im_with_keypoints = cv2.drawKeypoints(im, keypoints, np.array([]), (0,0,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
-             
+            # cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS ensures the size of the
+            # circle corresponds to the size of blob
+            im_with_keypoints = cv2.drawKeypoints(
+                black_and_white,
+                keypoints,
+                np.array([]),
+                (0, 0, 255),
+                cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+
             # Show keypoints
             cv2.imshow("Keypoints", im_with_keypoints)
             cv2.waitKey(0)
@@ -68,10 +73,7 @@ class StopsignFinder(object):
         return keypoints
 
     def panorama_to_readings(self, img, debug=False, save=False):
-        # TODO(buckbaskin): given an unwrapped panorama, find blobs using opencv
-        #   and convert their position in the image to a reading (bearing, size,
-        #   color)
-        img = cv2.blur(img, (5,5,))
+        img = cv2.blur(img, (5, 5,))
         if save and isinstance(save, str):
             loc = './processed/%s_orig.jpg' % (save,)
             print('cv2.imwrite(%s, img)' % (loc,))
@@ -86,8 +88,8 @@ class StopsignFinder(object):
         res_array = []
 
         # add in a gray-black filter
-        lower_limit = np.array([0,0,0])
-        upper_limit = np.array([180,75,255])
+        lower_limit = np.array([0, 0, 0])
+        upper_limit = np.array([180, 75, 255])
         mask = cv2.inRange(hsv_img, lower_limit, upper_limit)
         # mask_array.append(mask)
         # res_array.append(cv2.bitwise_and(img, img, mask=mask))
@@ -116,25 +118,23 @@ class StopsignFinder(object):
         if save and isinstance(save, str):
             cv2.imwrite('processed/'+save+'_mask.jpg', res_array[-1])
 
-        
-
         if debug:
             cv2.destroyAllWindows()
             cv2.waitKey()
 
-        for i in range(0,len(mask_array)):
+        for i in range(0, len(mask_array)):
             img_not = cv2.bitwise_not(mask_array[i])
-            
             keyp_not = self.blob_detect(img_not)
 
             if debug:
-                # img_with_keypoints = cv2.drawKeypoints(mask_array[i], keyp_mask, np.array([]), (0,0,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
-                # cv2.imshow('Positive with keyp', img_with_keypoints)
-                # cv2.waitKey()
-                # cv2.destroyAllWindows()
                 cv2.imshow('img_not', img_not)
                 cv2.waitKey()
-                not_with_keypoints = cv2.drawKeypoints(img_not, keyp_not, np.array([]), (0,0,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+                not_with_keypoints = cv2.drawKeypoints(
+                    img_not,
+                    keyp_not,
+                    np.array([]),
+                    (0, 0, 255),
+                    cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
                 cv2.imshow('Negative with keyp', not_with_keypoints)
                 cv2.waitKey()
                 cv2.destroyAllWindows()
@@ -146,4 +146,3 @@ class StopsignFinder(object):
 
     def has_stopsign(self, readings, debug=False):
         return len(readings) > 1
-
