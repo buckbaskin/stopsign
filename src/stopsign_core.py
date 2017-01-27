@@ -127,8 +127,6 @@ class StopsignFinder(object):
             
             keyp_not = self.blob_detect(img_not)
 
-            new_keyp = []
-
             if debug:
                 # img_with_keypoints = cv2.drawKeypoints(mask_array[i], keyp_mask, np.array([]), (0,0,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
                 # cv2.imshow('Positive with keyp', img_with_keypoints)
@@ -136,38 +134,12 @@ class StopsignFinder(object):
                 # cv2.destroyAllWindows()
                 cv2.imshow('img_not', img_not)
                 cv2.waitKey()
-                print('len(keyp_not): %d' % (len(keyp_not),))
-                for point in keyp_not:
-                    if point.size > 0.1:
-                        new_keyp.append(point)
-                not_with_keypoints = cv2.drawKeypoints(img_not, new_keyp, np.array([]), (0,0,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+                not_with_keypoints = cv2.drawKeypoints(img_not, keyp_not, np.array([]), (0,0,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
                 cv2.imshow('Negative with keyp', not_with_keypoints)
                 cv2.waitKey()
                 cv2.destroyAllWindows()
-                import sys
-                sys.exit(1)
 
-
-            # new_keyp = []
-            # for blob in keypoints:
-            #     if blob.size > 10:
-            #         new_keyp.append(blob)
-            #         blobs.append(self.blob_to_rd(img, blob))
-
-            # if debug:
-            #     img_with_keypoints = cv2.drawKeypoints(img, new_keyp, np.array([]), (0,0,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
-            #     cv2.imshow('Img Keypoints '+str(i), img_with_keypoints)
-            # if save and isinstance(save, str):
-            #     img_with_keypoints = cv2.drawKeypoints(img, new_keyp, np.array([]), (0,0,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
-            #     cv2.imwrite('processed/'+save+'_keyp.jpg', img)
-            # if debug:
-            #     mask_with_keypoints = cv2.drawKeypoints(mask_array[i], new_keyp, np.array([]), (0,0,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
-            #     cv2.imshow('Mask Keypoints '+str(i), mask_with_keypoints)
-            # if debug:
-            #     cv2.waitKey()
-            #     cv2.destroyAllWindows()
-
-        return blobs
+        return keyp_not
 
     def blob_to_rd(self, img, blob, debug=False):
         return Reading(0, 1, 0, 0, 0, 0)
