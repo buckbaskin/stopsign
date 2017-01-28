@@ -1,10 +1,16 @@
 #!/usr/bin/env python
 
+import rospy
+
 from collections import namedtuple
 import cv2
 import numpy as np
 
+from cv_bridge import CvBridge, CvBridgeError
+
 Reading = namedtuple('Reading', ['bearing', 'size', 'r', 'g', 'b', 'a'])
+
+COUNTER = 0
 
 class StopsignFinder(object):
     def __init__(self):
@@ -29,17 +35,19 @@ class StopsignFinder(object):
 
         self.detector = cv2.SimpleBlobDetector(self.params)
 
+        self.bridge = CvBridge() # Create bridge between OpenCV and ROS
 
-    def check_for_stopsign(self, unwrap=True, img=None, debug=False, save=False):
+
+    def check_for_stopsign(self, img, unwrap=True, debug=False, save=False, pub_mask=None):
+        if img is None:
+            return False
         if debug:
             print('1 type(img) -> %s' % (type(img),))
-        if img is None:
-            img = self.retrieve_image(debug=debug)
         if unwrap:
             img = self.unwrap_image(img, debug=debug)
         if debug:
             print('2 type(img) -> %s' % (type(img),))
-        readings = self.panorama_to_readings(img, debug=debug, save=save)
+        readings = self.panorama_to_readings(img, debug=debug, save=save, pub_mask=pub_mask)
         return self.has_stopsign(readings, debug=debug)
 
     def retrieve_image(self, debug=False):
@@ -72,7 +80,7 @@ class StopsignFinder(object):
 
         return keypoints
 
-    def panorama_to_readings(self, img, debug=False, save=False):
+    def panorama_to_readings(self, img, debug=False, save=False, pub_mask=None):
         img = cv2.blur(img, (5, 5,))
         if save and isinstance(save, str):
             loc = './processed/%s_orig.jpg' % (save,)
@@ -95,15 +103,15 @@ class StopsignFinder(object):
         # res_array.append(cv2.bitwise_and(img, img, mask=mask))
 
         # create a wrapping red filter (wraps from 160-20) (needs adjustment)
-        low_sat = 120 # too grey'd out
+        low_sat = 85 # too grey'd out
         hi_sat = 255
-        low_val = 140 # too dark
+        low_val = 100 # too dark
         hi_val = 240 # too bright
 
         lower_limit1 = np.array([170, low_sat, low_val])
         upper_limit1 = np.array([180, hi_sat, hi_val])
         lower_limit2 = np.array([0, low_sat, low_val])
-        upper_limit2 = np.array([10, hi_sat, hi_val])
+        upper_limit2 = np.array([15, hi_sat, hi_val])
         mask1 = cv2.inRange(hsv_img, lower_limit1, upper_limit1)
         mask2 = cv2.inRange(hsv_img, lower_limit2, upper_limit2)
         mask_final = cv2.bitwise_or(mask1, mask2)
@@ -125,6 +133,17 @@ class StopsignFinder(object):
         for i in range(0, len(mask_array)):
             img_not = cv2.bitwise_not(mask_array[i])
             keyp_not = self.blob_detect(img_not)
+
+            if pub_mask is not None:
+                # not_with_keypoints = cv2.drawKeypoints(
+                #     img_not,
+                #     keyp_not,
+                #     np.array([]),
+                #     (0, 0, 255),
+                #     cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+                rosImageMsg = self.bridge.cv2_to_imgmsg(img_not, encoding="mono8")
+                # rosImageMsg.header.stamp = rospy.get_rostime()
+                pub_mask.publish(rosImageMsg)
 
             if debug:
                 cv2.imshow('img_not', img_not)
@@ -154,16 +173,21 @@ class StopsignFinder(object):
         for keypoint in readings:
             size_accum += keypoint.size
 
-        print('size_accum %s' % (size_accum,))
-
         if size_accum > 60.0:
             if len(readings) == 2:
                 x0 = readings[0].pt[0]
                 x1 = readings[1].pt[0]
 
-                print('x1 - x0 %s' % (x1 - x0,))
+                if abs(x1 - x0) < 100:
+                    # print('x1 - x0 %s' % (x1 - x0,))
+                    global COUNTER
+                    COUNTER += 1
+                    print('%d Proper double blobs' % (COUNTER,))
                 return abs(x1 - x0) < 100
             else:
+                global COUNTER
+                COUNTER += 1
+                print('%d Big enough single blob' % (COUNTER,))
                 return True
         else:
             return False

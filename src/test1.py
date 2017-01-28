@@ -9,12 +9,12 @@ finder = StopsignFinder()
 
 img_names = ['2mLeft.jpg', '2mRight.jpg', '3mLeft.jpg', '3mRight.jpg',
     '4mLeft.jpg', '4mRight.jpg', 'yellowv1.jpg', 'yellowv0.jpg']
-# img_names = ['yellowv0.jpg']
+img_names = ['bag2im2.png']
 
 time_deltas = 0.0
 img_count = len(img_names)
 
-DEBUG = False
+DEBUG = True
 SAVE = False
 
 TRIM = False
