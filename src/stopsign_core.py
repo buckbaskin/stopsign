@@ -145,4 +145,25 @@ class StopsignFinder(object):
         return Reading(0, 1, 0, 0, 0, 0)
 
     def has_stopsign(self, readings, debug=False):
-        return len(readings) > 1
+        sorted(readings, key=lambda keyp: keyp.size)
+        if len(readings) >= 2:
+            readings = readings[-2:]
+
+        size_accum = 0.0
+
+        for keypoint in readings:
+            size_accum += keypoint.size
+
+        print('size_accum %s' % (size_accum,))
+
+        if size_accum > 60.0:
+            if len(readings) == 2:
+                x0 = readings[0].pt[0]
+                x1 = readings[1].pt[0]
+
+                print('x1 - x0 %s' % (x1 - x0,))
+                return abs(x1 - x0) < 100
+            else:
+                return True
+        else:
+            return False
