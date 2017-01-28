@@ -105,10 +105,10 @@ class StopsignFinder(object):
         # create a wrapping red filter (wraps from 160-20) (needs adjustment)
         low_sat = 85 # too grey'd out
         hi_sat = 255
-        low_val = 100 # too dark
+        low_val = 90 # too dark
         hi_val = 240 # too bright
 
-        lower_limit1 = np.array([170, low_sat, low_val])
+        lower_limit1 = np.array([160, low_sat, low_val])
         upper_limit1 = np.array([180, hi_sat, hi_val])
         lower_limit2 = np.array([0, low_sat, low_val])
         upper_limit2 = np.array([15, hi_sat, hi_val])
@@ -173,7 +173,7 @@ class StopsignFinder(object):
         for keypoint in readings:
             size_accum += keypoint.size
 
-        if size_accum > 60.0:
+        if size_accum > 45.0:
             if len(readings) == 2:
                 x0 = readings[0].pt[0]
                 x1 = readings[1].pt[0]
@@ -183,6 +183,9 @@ class StopsignFinder(object):
                     global COUNTER
                     COUNTER += 1
                     print('%d Proper double blobs' % (COUNTER,))
+                else:
+                    if debug:
+                        print('Non-vertical blobs')
                 return abs(x1 - x0) < 100
             else:
                 global COUNTER
@@ -190,4 +193,6 @@ class StopsignFinder(object):
                 print('%d Big enough single blob' % (COUNTER,))
                 return True
         else:
+            if debug:
+                print('Size Fail %s' % (size_accum,))
             return False
