@@ -7,9 +7,9 @@ from std_msgs.msg import Bool
 
 finder = StopsignFinder()
 
-# img_names = ['2mLeft.jpg', '2mRight.jpg', '3mLeft.jpg', '3mRight.jpg',
-#     '4mLeft.jpg', '4mRight.jpg', 'yellowv1.jpg', 'yellowv0.jpg']
-img_names = ['yellowv1.jpg', 'yellowv0.jpg']
+img_names = ['2mLeft.jpg', '2mRight.jpg', '3mLeft.jpg', '3mRight.jpg',
+    '4mLeft.jpg', '4mRight.jpg', 'yellowv1.jpg', 'yellowv0.jpg']
+# img_names = ['yellowv1.jpg']
 
 time_deltas = 0.0
 img_count = len(img_names)
