@@ -31,7 +31,7 @@ class StopsignFinder(object):
 
         self.params.filterByInertia = True
         self.params.minInertiaRatio = 0.05
-        self.params.minDistBetweenBlobs = 5.0
+        self.params.minDistBetweenBlobs = 1.0
 
         self.detector = cv2.SimpleBlobDetector(self.params)
 
@@ -103,18 +103,19 @@ class StopsignFinder(object):
         # res_array.append(cv2.bitwise_and(img, img, mask=mask))
 
         # create a wrapping red filter (wraps from 160-20) (needs adjustment)
-        low_sat = 85 # too grey'd out
+        low_sat = 100 # too grey'd out
         hi_sat = 255
-        low_val = 90 # too dark
+        low_val = 100 # too dark
         hi_val = 240 # too bright
 
-        lower_limit1 = np.array([160, low_sat, low_val])
+        lower_limit1 = np.array([170, low_sat, low_val])
         upper_limit1 = np.array([180, hi_sat, hi_val])
         lower_limit2 = np.array([0, low_sat, low_val])
-        upper_limit2 = np.array([15, hi_sat, hi_val])
+        upper_limit2 = np.array([10, hi_sat, hi_val])
         mask1 = cv2.inRange(hsv_img, lower_limit1, upper_limit1)
         mask2 = cv2.inRange(hsv_img, lower_limit2, upper_limit2)
         mask_final = cv2.bitwise_or(mask1, mask2)
+        mask_final = cv2.dilate(mask_final, np.ones((5,5)), iterations=2)
         mask_array.append(mask_final)
         res_array.append(cv2.bitwise_and(img, img, mask=mask_final))
         if debug:
