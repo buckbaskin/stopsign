@@ -98,7 +98,7 @@ class StopsignFinder(object):
         low_sat = 120 # too grey'd out
         hi_sat = 255
         low_val = 140 # too dark
-        hi_val = 210 # too bright
+        hi_val = 240 # too bright
 
         lower_limit1 = np.array([170, low_sat, low_val])
         upper_limit1 = np.array([180, hi_sat, hi_val])
