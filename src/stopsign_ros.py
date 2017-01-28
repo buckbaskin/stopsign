@@ -40,7 +40,10 @@ def image_cb(image_msg):
         cv_image = BRIDGE.imgmsg_to_cv2(image_msg, desired_encoding='passthrough')
         mess = Bool()
         mess.data = FINDER.check_for_stopsign(unwrap=False, img=cv_image, debug=False, save=False, pub_mask=PUB_MASK)
-        OUT.publish(mess)
+        try:
+            OUT.publish(mess)
+        except:
+            pass
     except CvBridgeError as cvbe:
         print(cvbe)
     
