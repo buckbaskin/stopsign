@@ -1,2 +1,3 @@
 src/usbcam_driver.py
 *.pyc
+data/
