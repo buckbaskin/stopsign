@@ -1,6 +1,8 @@
 <launch>
     <node pkg="rosbag" type="play" name="rosbag" args="-d 2 $(find stopsign)/data/single_i_fixed.bag"/>
     <node name="extract" pkg="image_view" type="extract_images" respawn="false" output="screen" cwd="ROS_HOME">
-        <remap from="image" to="/camera/image_raw"/>
+        <remap from="image" to="/camera/image"/>
+        <param name="filename_format" value="$(find stopsign)/data/raw/frame%04i.jpg"/>
+        <param name="sec_per_frame" value="0.03"/>
     </node>
 </launch>
