@@ -7,7 +7,7 @@ START_TIME = 70 # sec
 IMAGE_RATE = 31 # hz
 END_TIME = 120
 
-OUT_FILE = '/home/buck/ros_ws/src/stopsign/src/data/generated_vectors.csv'
+OUT_FILE = '/home/buck/ros_ws/src/stopsign/data/generated_vectors.csv'
 
 start_image_id = 1580
 end_image_id = 2189
