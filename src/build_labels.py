@@ -7,7 +7,7 @@ START_TIME = 70 # sec
 IMAGE_RATE = 31 # hz
 END_TIME = 120
 
-OUT_FILE = 'labeled_vectors.csv'
+OUT_FILE = '/home/buck/ros_ws/src/stopsign/src/data/generated_vectors.csv'
 
 start_image_id = 1580
 end_image_id = 2189
@@ -25,7 +25,7 @@ def flatten_kp(kp):
     v[2] = kp.octave
     v[3] = kp.pt[0]
     v[4] = kp.pt[1]
-    v[5] = kp.response
+    v[5] = kp.response * 1000000
     v[6] = kp.size
     return v
 
@@ -76,7 +76,7 @@ def hand_label_image(image_id):
     kp, des = orb.compute(img, kp)
 
     print('=====\npreview %04d\n' % (image_id,))
-    print('s -> image has a stopsign. Use mouse to select stopsign.')
+    print('s -> image has a stopsign.\nUse mouse to select stopsign.')
     print('\nOR\n')
     print('n -> image does not have a stopsign')
     print('---')
@@ -138,27 +138,51 @@ def hand_label_image(image_id):
     return results, test_kp
 
 def auto_label_image(image_id, klass):
-    return []
+    results = []
+    img = get_image(image_id)
+    # Initiate STAR detector
+    orb = cv2.ORB()
+
+    # find the keypoints with ORB
+    kp = orb.detect(img,None)
+
+    # compute the descriptors with ORB
+    kp, des = orb.compute(img, kp)
+
+    for index, keypoint in enumerate(kp):
+        descriptor = des[index]
+        vector = np.zeros((32+7+1+1,))
+        vector[-1:] = np.array([klass])
+        vector[-2:-1] = np.array([image_id])
+        vector[-9:-2] = np.array(flatten_kp(kp[index]))
+        vector[0:32] = descriptor
+        results.append(vector)
+    return results
 
 def extend_file(file, new_vectors):
     for vector in new_vectors:
-        file.write(','.join(['%.5f' % num for num in vector]) + '\n')
+        file.write(','.join(['%7.2f' % num for num in vector]) + '\n')
 
 with open(OUT_FILE, 'w') as f:
     line0 = []
     for i in range(32):
-        line0.append('desc%02d' % (i,))
-    line0.extend(['angle', 'class_id', 'octave', 'x', 'y', 'response', 'size'])
-    line0.append('image_id')
-    line0.append('class')
+        line0.append('descr%02d' % (i,))
+    line0.extend(['angle'.ljust(7), 'classid', 'octave'.ljust(7), 'x'.ljust(7), 'y'.ljust(7), 'respons', 'size'.ljust(7)])
+    line0.append('imageid')
+    line0.append('class'.ljust(7))
     f.write(','.join(line0) + '\n')
+    print('Prefilling data')
     for auto_image_id in range(start_image_id):
         new_vectors = auto_label_image(auto_image_id, 0)
         extend_file(f, new_vectors)
 
-    for image_id in range(start_image_id, end_image_id, 50):
+    print('Done Prefilling Data')
+
+    for image_id in range(start_image_id, end_image_id, 100):
         new_vectors, is_stopsign = hand_label_image(image_id)
         extend_file(f, new_vectors)
+        print('Autofilling data')
         for auto_image_id in range(image_id+1, image_id+IMAGE_RATE):
             new_vectors = auto_label_image(auto_image_id, 1 if is_stopsign else 0)
             extend_file(f, new_vectors)
+        print('Done Autofilling data')
