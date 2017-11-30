@@ -1,18 +1,23 @@
 #!/usr/bin/env python
+import rospkg
+
 import cv2
 import numpy as np
 from matplotlib import pyplot as plt
+
+rospack = rospkg.RosPack()
+pkg_path = rospack.get_path('stopsign')
 
 START_TIME = 70 # sec
 IMAGE_RATE = 31 # hz
 END_TIME = 120
 
-OUT_FILE = '/home/buck/ros_ws/src/stopsign/data/generated_vectors.csv'
+OUT_FILE = '%s/data/003_manual_labels/generated_vectors.csv' % (pkg_path,)
 
 start_image_id = 1580
 end_image_id = 2189
 
-IMAGE_BASE_STRING = '/home/buck/ros_ws/src/stopsign/src/raw/frame%04d.jpg'
+IMAGE_BASE_STRING = '%s/data/002_original_images/%s' % (pkg_path, 'frame%04d.jpg')
 
 def get_image(image_id):
     filename = IMAGE_BASE_STRING % (image_id,)
