@@ -24,12 +24,12 @@ def get_image(image_id):
 
 def flatten_kp(kp):
     v = np.array(np.zeros((7,)))
-    v[0] = kp.angle
+    v[0] = kp.angle * 1000
     v[1] = kp.class_id
     v[2] = kp.octave
     v[3] = kp.pt[0]
     v[4] = kp.pt[1]
-    v[5] = kp.response * 1000000
+    v[5] = kp.response * 100000000
     v[6] = kp.size
     return v
 
@@ -67,7 +67,7 @@ def click_and_crop(event, x, y, flags, param):
 
 def kp_des2vector(klass, image_id, kp, des):
     vector = np.zeros((32+7+1+1,))
-    vector[:1] = np.array([klass])
+    vector[:1] = np.array([klass]) * 1000
     vector[-1] = np.array([image_id])
     vector[-8:-1] = np.array(flatten_kp(kp))
     vector[1:33] = des
@@ -168,7 +168,7 @@ def extend_file(file, new_vectors):
 
 def expand_to_string(new_vectors):
     for vec in new_vectors:
-        yield ','.join(['%7.2f' % num for num in vec])
+        yield ','.join(['%7d' % num for num in vec])
 
 ### Begin the whole process ###
 
