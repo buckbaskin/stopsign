@@ -8,13 +8,12 @@ from matplotlib import pyplot as plt
 rospack = rospkg.RosPack()
 pkg_path = rospack.get_path('stopsign')
 
-START_TIME = 70 # sec
-IMAGE_RATE = 31 # hz
-END_TIME = 120
+IMAGE_RATE = 11 # hz
 
-OUT_FILE = '%s/data/003_manual_labels/generated_vectors.csv' % (pkg_path,)
+EXACT_FILE = '%s/data/003_manual_labels/exact.csv' % (pkg_path,)
+ALL_FILE = '%s/data/003_manual_labels/all.csv' % (pkg_path,)
 
-start_image_id = 1580
+start_image_id = 1550
 end_image_id = 2189
 
 IMAGE_BASE_STRING = '%s/data/002_original_images/%s' % (pkg_path, 'frame%04d.jpg')
@@ -130,10 +129,10 @@ def hand_label_image(image_id):
         else:
             klass = 0
         vector = np.zeros((32+7+1+1,))
-        vector[-1:] = np.array([klass])
-        vector[-2:-1] = np.array([image_id])
-        vector[-9:-2] = np.array(flatten_kp(kp[index]))
-        vector[0:32] = descriptor
+        vector[:1] = np.array([klass])
+        vector[-1] = np.array([image_id])
+        vector[-8:-1] = np.array(flatten_kp(kp[index]))
+        vector[1:33] = descriptor
         results.append(vector)
     cv2.destroyAllWindows()
     minx = 0
@@ -168,26 +167,53 @@ def extend_file(file, new_vectors):
     for vector in new_vectors:
         file.write(','.join(['%7.2f' % num for num in vector]) + '\n')
 
-with open(OUT_FILE, 'w') as f:
-    line0 = []
-    for i in range(32):
-        line0.append('descr%02d' % (i,))
-    line0.extend(['angle'.ljust(7), 'classid', 'octave'.ljust(7), 'x'.ljust(7), 'y'.ljust(7), 'respons', 'size'.ljust(7)])
-    line0.append('imageid')
-    line0.append('class'.ljust(7))
-    f.write(','.join(line0) + '\n')
-    print('Prefilling data')
-    for auto_image_id in range(start_image_id):
-        new_vectors = auto_label_image(auto_image_id, 0)
-        extend_file(f, new_vectors)
+def expand_to_string(new_vectors):
+    for vec in new_vectors:
+        yield ','.join(['%7.2f' % num for num in vec])
 
-    print('Done Prefilling Data')
+### Begin the whole process ###
 
-    for image_id in range(start_image_id, end_image_id, 100):
-        new_vectors, is_stopsign = hand_label_image(image_id)
-        extend_file(f, new_vectors)
-        print('Autofilling data')
-        for auto_image_id in range(image_id+1, image_id+IMAGE_RATE):
-            new_vectors = auto_label_image(auto_image_id, 1 if is_stopsign else 0)
-            extend_file(f, new_vectors)
-        print('Done Autofilling data')
+# Generate the first line from data
+line0 = []
+line0.append('class'.ljust(7))
+for i in range(32):
+    line0.append('descr%02d' % (i,))
+# line0.extend(['Keypoint Angle', 'Keypoint Class Id', 'Keypoint Octave', 'Keypoint X', 'Keypoint Y', 'Keypoint Response x 10^6', 'Keypoint Size'])
+line0.extend(['angle'.ljust(7), 'classid', 'octave'.ljust(7), 'x'.ljust(7), 'y'.ljust(7), 'respons', 'size'.ljust(7)])
+line0.append('imageid')
+line0 = ','.join(line0)
+
+exact_lines = [line0]
+all_lines = [line0]
+
+# Label all images before first stopsign as not-stopsign
+print('Prefilling data')
+for auto_image_id in range(start_image_id):
+    if auto_image_id % 100 == 0:
+        print('%d / %d' % (auto_image_id, start_image_id,))
+    new_vectors = auto_label_image(auto_image_id, 0)
+    all_lines.extend(expand_to_string(new_vectors))
+
+print('Done Prefilling Data')
+
+# Hand label sampled images and auto fill the rest
+for image_id in range(start_image_id, end_image_id, IMAGE_RATE):
+    new_vectors, is_stopsign = hand_label_image(image_id)
+    exact_lines.extend(expand_to_string(new_vectors))
+    all_lines.extend(expand_to_string(new_vectors))
+    print('Autofilling data')
+    for auto_image_id in range(image_id+1, image_id+IMAGE_RATE):
+        new_vectors = auto_label_image(auto_image_id, 0.75 if is_stopsign else 0.25)
+        all_lines.extend(expand_to_string(new_vectors))
+    print('Done Autofilling data')
+
+
+print('Write to EXACT_FILE')
+with open(EXACT_FILE, 'w') as f:
+    for line in exact_lines:
+        f.write('%s\n' % (line,))
+print('Write to ALL_FILE')
+with open(ALL_FILE, 'w') as f:
+    for line in all_lines:
+        f.write('%s\n' % (line,))
+
