@@ -65,6 +65,13 @@ def click_and_crop(event, x, y, flags, param):
         maxy = y
     rebuild_contour()
 
+def kp_des2vector(klass, image_id, kp, des):
+    vector = np.zeros((32+7+1+1,))
+    vector[:1] = np.array([klass])
+    vector[-1] = np.array([image_id])
+    vector[-8:-1] = np.array(flatten_kp(kp))
+    vector[1:33] = des
+    return vector
 
 def hand_label_image(image_id):
     global minx, miny, maxx, maxy, contour
@@ -128,11 +135,7 @@ def hand_label_image(image_id):
                 klass = 0
         else:
             klass = 0
-        vector = np.zeros((32+7+1+1,))
-        vector[:1] = np.array([klass])
-        vector[-1] = np.array([image_id])
-        vector[-8:-1] = np.array(flatten_kp(kp[index]))
-        vector[1:33] = descriptor
+        vector = kp_des2vector(klass, image_id, kp[index], descriptor)
         results.append(vector)
     cv2.destroyAllWindows()
     minx = 0
@@ -155,11 +158,7 @@ def auto_label_image(image_id, klass):
 
     for index, keypoint in enumerate(kp):
         descriptor = des[index]
-        vector = np.zeros((32+7+1+1,))
-        vector[-1:] = np.array([klass])
-        vector[-2:-1] = np.array([image_id])
-        vector[-9:-2] = np.array(flatten_kp(kp[index]))
-        vector[0:32] = descriptor
+        vector = kp_des2vector(klass, image_id, kp[index], descriptor)
         results.append(vector)
     return results
 
