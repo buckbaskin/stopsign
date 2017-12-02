@@ -1,8 +1,10 @@
+#!/usr/bin/env python
 import cv2
 import numpy as np
 import pandas as pd
 import rospkg
 
+from itertools import starmap
 from matplotlib import pyplot as plt
 from sklearn.neighbors import KNeighborsRegressor
 
@@ -22,9 +24,54 @@ end_image_id = 2189
 
 IMAGE_BASE_STRING = '%s/data/002_original_images/%s' % (pkg_path, 'frame%04d.jpg')
 
+col_names = []
+col_names.append('class'.ljust(7))
+for i in range(32):
+    col_names.append('descr%02d' % (i,))
+
+kp_names = ['x', 'y', 'size', 'angle', 'respons', 'octave', 'classid']
+kp_names = [x.ljust(7) for x in kp_names]
+
+# cv2.KeyPoint([x, y, _size[, _angle[, _response[, _octave[, _class_id]]]]])
+
 def get_image(image_id):
     filename = IMAGE_BASE_STRING % (image_id,)
     return cv2.imread(filename, cv2.IMREAD_COLOR)
+
+def render_and_capture(image_id, stop_df, confused_df, nostop_df):
+    img = get_image(image_id)
+
+    skps = list(starmap(cv2.KeyPoint, stop_df[kp_names].values.tolist()))
+    if len(skps) > 0:
+        img = cv2.drawKeypoints(
+                    img,
+                    skps,
+                    color=(0,0,255),
+                    flags=0)
+    else:
+        print('No stopsign points')
+    noskps = list(starmap(cv2.KeyPoint, nostop_df[kp_names].values.tolist()))
+    if len(skps) > 0:
+        img = cv2.drawKeypoints(
+                    img,
+                    noskps,
+                    color=(0,0,255),
+                    flags=0)
+    else:
+        print('No not-stopsign points')
+    confusedkps = list(starmap(cv2.KeyPoint, confused_df[kp_names].values.tolist()))
+    if len(skps) > 0:
+        img = cv2.drawKeypoints(
+                    img,
+                    confusedkps,
+                    color=(0,0,255),
+                    flags=0)
+    else:
+        print('No confused points')
+    cv2.imshow('review', img)
+    # cv2.setMouseCallback('preview', click_and_crop)
+    val = cv2.waitKey(10 * 1000)
+    return val % 256
 
 def ask_user(image_id, stop_df, confused_df, nostop_df, recursion=0):
     '''
@@ -40,20 +87,27 @@ def ask_user(image_id, stop_df, confused_df, nostop_df, recursion=0):
 
     Redraw, then restart ask user process with recursion incremented
     '''
-    # TODO(buckbaskin): render image, capture key input
     if recursion >= 10:
         nostop_df.append(confused_df)
         return stop_df, nostop_df
 
-    if user_key == 'a':
+    user_key = render_and_capture(image_id, stop_df, confused_df, nostop_df)
+    print(confused_df)
+    import sys
+    sys.exit(1)
+    print('user key %s %s' % (user_key, chr(user_key)))
+    import sys
+    sys.exit(1)
+
+    if user_key == ord('a'):
         if len(confused_df) == 0:
             return stop_df, nostop_df
-    if user_key == 'n':
+    if user_key == ord('n'):
         nostop_df.append(stop_df)
         nostop_df.append(confused_df)
         stop_df.drop(stop_df.index, inplace=True)
         return stop_df, nostop_df
-    if user_key == 's' or user_key == 'a':
+    if user_key == ord('s') or user_key == ord('a'):
         # polygon things
         raise NotImplementedError() # TODO(buckbaskin): fix this
         return stop_df, nostop_df
@@ -64,42 +118,44 @@ def ask_user(image_id, stop_df, confused_df, nostop_df, recursion=0):
 # Process
 if __name__ == '__main__':
     # learn from exact file
-    col_names = []
-    col_names.append('class'.ljust(7))
-    for i in range(32):
-        col_names.append('descr%02d' % (i,))
-
-    kp_names = ['angle', 'classid', 'octave', 'x', 'y', 'respons', 'size']
 
     exact_df = pd.read_csv(EXACT_FILE_IN, header=0, names=col_names)
-    y = df[['class']].as_matrix
-    X = df[col_names[1:]].as_matrix
-    
+    # TODO(buckbaskin) remap response, class, etc
+    raise NotImplementedError() 
+    y = exact_df[col_names[:1]].as_matrix()
+    X = exact_df[col_names[1:]].as_matrix()
+
+    print('Begin Learning')
     neigh = KNeighborsRegressor(n_neighbors=5, weights='distance', algorithm='ball_tree')
     neigh.fit(X, y)
+    print('Done with Initial Fit')
+    print('Begin reading in all data from CSV')
 
     all_df = pd.read_csv(ALL_FILE_IN, header=0)
 
+    print('Read in ALL data')
+
     new_all_df = pd.DataFrame()
 
+    print('Iterate through Images')
     # iterate through all file by image and reclassify
     for image_id in range(start_image_id, end_image_id):
-        imagedf = all_df.loc[df['imageid'] == image_id]
+        imagedf = all_df.loc[all_df['imageid'] == image_id]
 
         # For each keypoint in the image:
         #   use knn to classify it again
-        new_y = neigh.predict(imagedf[col_names[1:]].as_matrix)
-        old_y = imagedf[['class']].as_matrix
+        new_y = neigh.predict(imagedf[col_names[1:]].as_matrix())
+        old_y = imagedf[col_names[:1]].as_matrix()
         delta_y = np.absolute(new_y - old_y)
         
         imagedf['delta_y'] = delta_y
         confused_df = imagedf.loc[imagedf['delta_y'] > 0.2]
-        confused_kp = confused_df[kp_names].as_matrix # yellow
+        confused_kp = confused_df[kp_names].as_matrix() # yellow
         stable_df = imagedf.loc[imagedf['delta_y'] <= 0.2]
-        stop_df = stable_df.loc[stable_df['class'] > 0.5]
-        # stop_kp = stop_df[kp_names].as_matrix # blue
-        nostop_df = stable_df.loc[stable_df['class'] <= 0.5]
-        # nostop_kp = nostop_df[kp_names].as_matrix # green
+        stop_df = stable_df.loc[stable_df[col_names[0]] > 0.5]
+        # stop_kp = stop_df[kp_names].as_matrix() # blue
+        nostop_df = stable_df.loc[stable_df[col_names[0]] <= 0.5]
+        # nostop_kp = nostop_df[kp_names].as_matrix() # green
 
         # render image w/ colorized keypoints
         # s to accept, click-drag + n to rerender octogon and eventually select
