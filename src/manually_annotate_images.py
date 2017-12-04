@@ -93,8 +93,8 @@ def hand_label_image(image_id):
     print('---')
     cv2.imshow('preview', img)
     cv2.setMouseCallback('preview', click_and_crop)
-    val = cv2.waitKey(0)
-    test_kp = val == 1048691
+    val = cv2.waitKey(0) % 256
+    test_kp = val == ord('s')
     cv2.destroyAllWindows()
 
     if test_kp:
