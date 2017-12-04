@@ -61,9 +61,11 @@ def click_and_crop(event, x, y, flags, param):
     if event == cv2.EVENT_LBUTTONDOWN:
         minx = x
         miny = y
+        print('min crop')
     elif event == cv2.EVENT_LBUTTONUP:
         maxx = x
         maxy = y
+        print('max crop')
     rebuild_contour()
 
 def get_image(image_id):
@@ -73,37 +75,55 @@ def get_image(image_id):
 def render_and_capture(image_id, stop_df, confused_df, nostop_df):
     img = get_image(image_id)
 
-    skps = list(starmap(cv2.KeyPoint, stop_df[kp_names].values.tolist()))
-    if len(skps) > 0:
-        img = cv2.drawKeypoints(
-                    img,
-                    skps,
-                    color=(255,0,0),
-                    flags=0)
-    else:
-        print('No stopsign points')
-    noskps = list(starmap(cv2.KeyPoint, nostop_df[kp_names].values.tolist()))
-    if len(noskps) > 0:
-        img = cv2.drawKeypoints(
-                    img,
-                    noskps,
-                    color=(255,255,0),
-                    flags=0)
-    else:
-        print('No not-stopsign points')
-    confusedkps = list(starmap(cv2.KeyPoint, confused_df[kp_names].values.tolist()))
-    if len(confusedkps) > 0:
-        img = cv2.drawKeypoints(
-                    img,
-                    confusedkps,
-                    color=(0,255,0),
-                    flags=0)
-    else:
-        print('No confused points')
+    try:
+        skps = list(starmap(cv2.KeyPoint, stop_df[kp_names].values.tolist()))
+        if len(skps) > 0:
+            img = cv2.drawKeypoints(
+                        img,
+                        skps,
+                        color=(255,0,0),
+                        flags=0)
+        else:
+            print('No stopsign points')
+    except KeyError:
+        print('error building skps')
+
+    try:
+        noskps = list(starmap(cv2.KeyPoint, nostop_df[kp_names].values.tolist()))
+        if len(noskps) > 0:
+            img = cv2.drawKeypoints(
+                        img,
+                        noskps,
+                        color=(255,255,0),
+                        flags=0)
+        else:
+            print('No not-stopsign points')
+    except KeyError:
+        print('error building noskps')
+
+    try:
+        confusedkps = list(starmap(cv2.KeyPoint, confused_df[kp_names].values.tolist()))
+        if len(confusedkps) > 0:
+            img = cv2.drawKeypoints(
+                        img,
+                        confusedkps,
+                        color=(0,255,0),
+                        flags=0)
+        else:
+            print('No confused points')
+    except KeyError:
+        print('error building confusedkps')
+
     cv2.imshow('review', img)
     cv2.setMouseCallback('review', click_and_crop)
     val = cv2.waitKey(0)
     return val % 256
+
+def match_contour(row):
+    return cv2.pointPolygonTest(
+        contour,
+        (row['x'.ljust(7)], row['y'.ljust(7)],),
+        False)
 
 def seek_user_classification(image_id, stop_df, confused_df, nostop_df):
     img = get_image(image_id)
@@ -134,22 +154,9 @@ def seek_user_classification(image_id, stop_df, confused_df, nostop_df):
         if val % 256 == ord('s'):
             break
 
-    new_stop_df = pd.DataFrame()
-    new_stop_df.append(stop_df[stop_df.apply(
-        lambda row: cv2.pointPolygonTest(contour, (row['x'], row['y'],), False), axis=1)])
-    new_stop_df.append(nostop_df[nostop_df.apply(
-        lambda row: cv2.pointPolygonTest(contour, (row['x'], row['y'],), False), axis=1)])
-    new_stop_df.append(confused_df[confused_df.apply(
-        lambda row: cv2.pointPolygonTest(contour, (row['x'], row['y'],), False), axis=1)])
-    new_nostop_df = pd.DataFrame()
-    new_nostop_df.append(stop_df[stop_df.apply(
-        lambda row: not cv2.pointPolygonTest(contour, (row['x'], row['y'],), False), axis=1)])
-    new_nostop_df.append(nostop_df[nostop_df.apply(
-        lambda row: not cv2.pointPolygonTest(contour, (row['x'], row['y'],), False), axis=1)])
-    new_nostop_df.append(confused_df[confused_df.apply(
-        lambda row: not cv2.pointPolygonTest(contour, (row['x'], row['y'],), False), axis=1)])
-
-    return new_stop_df, new_nostop_df
+    # I can get the contour and make a function that boolean values based on the
+    #   inclusion of the contour based on x, y
+    # TODO(return the partitioned dataframes based on the match_contour function)
 
 def ask_user(image_id, stop_df, confused_df, nostop_df, recursion=0):
     '''
@@ -230,7 +237,7 @@ if __name__ == '__main__':
     print('Iterate through Images')
     # iterate through all file by image and reclassify
     #TODO fix this, change back to step 1
-    for image_id in range(start_image_id, end_image_id, 25):
+    for image_id in range(1790, end_image_id, 1):
         if image_id % 50 == 0 and image_id > 0:
             print('writing image up to %d' % (image_id - 1,))
             new_all_df.to_csv(ALL_FILE_OUT)
