@@ -5,7 +5,7 @@ import pandas as pd
 import rospkg
 
 from itertools import starmap
-from matplotlib import pyplot as plt
+# from matplotlib import pyplot as plt
 from sklearn.neighbors import KNeighborsRegressor
 
 rospack = rospkg.RosPack()
@@ -32,7 +32,39 @@ for i in range(32):
 kp_names = ['x', 'y', 'size', 'angle', 'respons', 'octave', 'classid']
 kp_names = [x.ljust(7) for x in kp_names]
 
-# cv2.KeyPoint([x, y, _size[, _angle[, _response[, _octave[, _class_id]]]]])
+minx = -10000
+miny = -10000
+maxx = 10000
+maxy = 10000
+user_contour = False
+contour = []
+
+def rebuild_contour():
+    global minx, miny, maxx, maxy
+    x1 = minx
+    x2 = int(2.0/3 * minx + 1.0/3 * maxx)
+    x3 = int(1.0/3 * minx + 2.0/3 * maxx)
+    x4 = maxx
+    y1 = miny
+    y2 = int(2.0/3 * miny + 1.0/3 * maxy)
+    y3 = int(1.0/3 * miny + 2.0/3 * maxy)
+    y4 = maxy
+    global contour
+    contour = np.array([[x2, y1], [x3, y1], [x4, y2], [x4, y3],
+                        [x3, y4], [x2, y4], [x1, y3], [x1, y2]], np.int32)
+
+rebuild_contour()
+
+def click_and_crop(event, x, y, flags, param):
+    global minx, miny, maxx, maxy, user_contour
+    user_contour = True
+    if event == cv2.EVENT_LBUTTONDOWN:
+        minx = x
+        miny = y
+    elif event == cv2.EVENT_LBUTTONUP:
+        maxx = x
+        maxy = y
+    rebuild_contour()
 
 def get_image(image_id):
     filename = IMAGE_BASE_STRING % (image_id,)
@@ -69,9 +101,55 @@ def render_and_capture(image_id, stop_df, confused_df, nostop_df):
     else:
         print('No confused points')
     cv2.imshow('review', img)
-    # cv2.setMouseCallback('preview', click_and_crop)
+    cv2.setMouseCallback('review', click_and_crop)
     val = cv2.waitKey(0)
     return val % 256
+
+def seek_user_classification(image_id, stop_df, confused_df, nostop_df):
+    img = get_image(image_id)
+    # force user selection of a polygon
+    while not user_contour and False:
+        pass
+
+    kp = list(starmap(cv2.KeyPoint, stop_df[kp_names].values.tolist()))
+    kp.extend(list(starmap(cv2.KeyPoint, confused_df[kp_names].values.tolist())))
+    kp.extend(list(starmap(cv2.KeyPoint, nostop_df[kp_names].values.tolist())))
+
+    # draw polygon
+    print('s -> accept polyline as region\n\nOR\n')
+    print('Use mouse to reselect the region')
+    print('n -> refresh polyline as region')
+    print('---')
+
+    for i in range(20):
+        imgur = cv2.drawKeypoints(
+            img,
+            filter(lambda x: cv2.pointPolygonTest(contour, x.pt, False) >= 0, kp),
+            color=(0,255,0),
+            flags=0)
+        cv2.polylines(imgur, [contour], True, (79*i % 255, 0, 255))
+        cv2.imshow('preview', imgur)
+        cv2.setMouseCallback('preview', click_and_crop)
+        val = cv2.waitKey(0)
+        if val % 256 == ord('s'):
+            break
+
+    new_stop_df = pd.DataFrame()
+    new_stop_df.append(stop_df[stop_df.apply(
+        lambda row: cv2.pointPolygonTest(contour, (row['x'], row['y'],), False), axis=1)])
+    new_stop_df.append(nostop_df[nostop_df.apply(
+        lambda row: cv2.pointPolygonTest(contour, (row['x'], row['y'],), False), axis=1)])
+    new_stop_df.append(confused_df[confused_df.apply(
+        lambda row: cv2.pointPolygonTest(contour, (row['x'], row['y'],), False), axis=1)])
+    new_nostop_df = pd.DataFrame()
+    new_nostop_df.append(stop_df[stop_df.apply(
+        lambda row: not cv2.pointPolygonTest(contour, (row['x'], row['y'],), False), axis=1)])
+    new_nostop_df.append(nostop_df[nostop_df.apply(
+        lambda row: not cv2.pointPolygonTest(contour, (row['x'], row['y'],), False), axis=1)])
+    new_nostop_df.append(confused_df[confused_df.apply(
+        lambda row: not cv2.pointPolygonTest(contour, (row['x'], row['y'],), False), axis=1)])
+
+    return new_stop_df, new_nostop_df
 
 def ask_user(image_id, stop_df, confused_df, nostop_df, recursion=0):
     '''
@@ -109,8 +187,15 @@ def ask_user(image_id, stop_df, confused_df, nostop_df, recursion=0):
         return stop_df, nostop_df
     if user_key == ord('s') or user_key == ord('a'):
         # polygon things
-        raise NotImplementedError() # TODO(buckbaskin): fix this
-        return stop_df, nostop_df
+        print('seek user classification')
+        new_stop_df, new_nostop_df = seek_user_classification(image_id, stop_df, confused_df, nostop_df)
+
+        print('rerendered image')
+        val = render_and_capture(image_id, new_stop_df, pd.DataFrame(), new_nostop_df)
+
+        import sys
+        sys.exit(1)
+        return new_stop_df, new_nostop_df
     else:
         raise ValueError('Please use a valid key (a, s, n)')
 
@@ -144,7 +229,8 @@ if __name__ == '__main__':
 
     print('Iterate through Images')
     # iterate through all file by image and reclassify
-    for image_id in range(start_image_id, end_image_id):
+    #TODO fix this, change back to step 1
+    for image_id in range(start_image_id, end_image_id, 25):
         if image_id % 50 == 0 and image_id > 0:
             print('writing image up to %d' % (image_id - 1,))
             new_all_df.to_csv(ALL_FILE_OUT)
