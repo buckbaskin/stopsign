@@ -11,9 +11,8 @@ pkg_path = rospack.get_path('stopsign')
 IMAGE_RATE = 11 # hz
 
 EXACT_FILE = '%s/data/003_manual_labels/exact.csv' % (pkg_path,)
-ALL_FILE = '%s/data/003_manual_labels/all.csv' % (pkg_path,)
 
-start_image_id = 1550
+start_image_id = 1785
 end_image_id = 2189
 
 IMAGE_BASE_STRING = '%s/data/002_original_images/%s' % (pkg_path, 'frame%04d.jpg')
@@ -183,7 +182,6 @@ line0.append('imageid')
 line0 = ','.join(line0)
 
 exact_lines = [line0]
-all_lines = [line0]
 
 # Label all images before first stopsign as not-stopsign
 print('Prefilling data')
@@ -191,28 +189,17 @@ for auto_image_id in range(start_image_id):
     if auto_image_id % 100 == 0:
         print('%d / %d' % (auto_image_id, start_image_id,))
     new_vectors = auto_label_image(auto_image_id, 0)
-    all_lines.extend(expand_to_string(new_vectors))
+    exact_lines.extend(expand_to_string(new_vectors))
 
 print('Done Prefilling Data')
 
 # Hand label sampled images and auto fill the rest
-for image_id in range(start_image_id, end_image_id, IMAGE_RATE):
+for image_id in range(start_image_id, end_image_id, 1):
     new_vectors, is_stopsign = hand_label_image(image_id)
     exact_lines.extend(expand_to_string(new_vectors))
-    all_lines.extend(expand_to_string(new_vectors))
-    print('Autofilling data')
-    for auto_image_id in range(image_id+1, image_id+IMAGE_RATE):
-        new_vectors = auto_label_image(auto_image_id, 0.75 if is_stopsign else 0.25)
-        all_lines.extend(expand_to_string(new_vectors))
-    print('Done Autofilling data')
 
 
 print('Write to EXACT_FILE')
 with open(EXACT_FILE, 'w') as f:
     for line in exact_lines:
         f.write('%s\n' % (line,))
-print('Write to ALL_FILE')
-with open(ALL_FILE, 'w') as f:
-    for line in all_lines:
-        f.write('%s\n' % (line,))
-
