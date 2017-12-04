@@ -46,25 +46,25 @@ def render_and_capture(image_id, stop_df, confused_df, nostop_df):
         img = cv2.drawKeypoints(
                     img,
                     skps,
-                    color=(0,0,255),
+                    color=(255,0,0),
                     flags=0)
     else:
         print('No stopsign points')
     noskps = list(starmap(cv2.KeyPoint, nostop_df[kp_names].values.tolist()))
-    if len(skps) > 0:
+    if len(noskps) > 0:
         img = cv2.drawKeypoints(
                     img,
                     noskps,
-                    color=(0,0,255),
+                    color=(255,255,0),
                     flags=0)
     else:
         print('No not-stopsign points')
     confusedkps = list(starmap(cv2.KeyPoint, confused_df[kp_names].values.tolist()))
-    if len(skps) > 0:
+    if len(confusedkps) > 0:
         img = cv2.drawKeypoints(
                     img,
                     confusedkps,
-                    color=(0,0,255),
+                    color=(0,255,0),
                     flags=0)
     else:
         print('No confused points')
@@ -91,18 +91,18 @@ def ask_user(image_id, stop_df, confused_df, nostop_df, recursion=0):
         nostop_df.append(confused_df)
         return stop_df, nostop_df
 
+    if image_id < 1785:
+        nostop_df.append(stop_df)
+        nostop_df.append(confused_df)
+        stop_df.drop(stop_df.index, inplace=True)
+        return stop_df, nostop_df
+
     user_key = render_and_capture(image_id, stop_df, confused_df, nostop_df)
-    print(confused_df)
-    import sys
-    sys.exit(1)
-    print('user key %s %s' % (user_key, chr(user_key)))
-    import sys
-    sys.exit(1)
 
     if user_key == ord('a'):
         if len(confused_df) == 0:
             return stop_df, nostop_df
-    if user_key == ord('n'):
+    if user_key == ord('n') :
         nostop_df.append(stop_df)
         nostop_df.append(confused_df)
         stop_df.drop(stop_df.index, inplace=True)
@@ -119,9 +119,15 @@ def ask_user(image_id, stop_df, confused_df, nostop_df, recursion=0):
 if __name__ == '__main__':
     # learn from exact file
 
-    exact_df = pd.read_csv(EXACT_FILE_IN, header=0, names=col_names)
-    # TODO(buckbaskin) remap response, class, etc
-    raise NotImplementedError() 
+    exact_df = pd.read_csv(EXACT_FILE_IN, header=0)
+    # class
+    exact_df[col_names[0]] = exact_df[col_names[0]].apply(lambda cls: cls / 1000.0)
+    # response
+    exact_df[kp_names[4]] = exact_df[kp_names[4]].apply(lambda res: res / 100000000.0)
+    # angle
+    exact_df[kp_names[3]] = exact_df[kp_names[3]].apply(lambda ang: ang / 1000.0)
+    print(exact_df.describe())
+
     y = exact_df[col_names[:1]].as_matrix()
     X = exact_df[col_names[1:]].as_matrix()
 
@@ -140,6 +146,8 @@ if __name__ == '__main__':
     print('Iterate through Images')
     # iterate through all file by image and reclassify
     for image_id in range(start_image_id, end_image_id):
+        if image_id % 20 == 0:
+            print('image %d' % (image_id,))
         imagedf = all_df.loc[all_df['imageid'] == image_id]
 
         # For each keypoint in the image:
