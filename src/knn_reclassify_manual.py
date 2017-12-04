@@ -70,7 +70,7 @@ def render_and_capture(image_id, stop_df, confused_df, nostop_df):
         print('No confused points')
     cv2.imshow('review', img)
     # cv2.setMouseCallback('preview', click_and_crop)
-    val = cv2.waitKey(10 * 1000)
+    val = cv2.waitKey(0)
     return val % 256
 
 def ask_user(image_id, stop_df, confused_df, nostop_df, recursion=0):
@@ -126,7 +126,6 @@ if __name__ == '__main__':
     exact_df[kp_names[4]] = exact_df[kp_names[4]].apply(lambda res: res / 100000000.0)
     # angle
     exact_df[kp_names[3]] = exact_df[kp_names[3]].apply(lambda ang: ang / 1000.0)
-    print(exact_df.describe())
 
     y = exact_df[col_names[:1]].as_matrix()
     X = exact_df[col_names[1:]].as_matrix()
@@ -146,8 +145,10 @@ if __name__ == '__main__':
     print('Iterate through Images')
     # iterate through all file by image and reclassify
     for image_id in range(start_image_id, end_image_id):
-        if image_id % 20 == 0:
-            print('image %d' % (image_id,))
+        if image_id % 50 == 0 and image_id > 0:
+            print('writing image up to %d' % (image_id - 1,))
+            new_all_df.to_csv(ALL_FILE_OUT)
+            print('done writing')
         imagedf = all_df.loc[all_df['imageid'] == image_id]
 
         # For each keypoint in the image:
