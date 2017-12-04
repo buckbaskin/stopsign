@@ -13,6 +13,8 @@ The `GaussianProcessClassifier` was also considered, but it crashed with a Memor
 
 ## The Test
 
+See `classify_descriptors.py`
+
 Using training data subsampled from the actual data with different seeds for the random number generator, each classifier was trained on the subsample for that seed. From there, predictions were made and the accuracy, precision and recall were averaged over the 6 tests.
 
 ## The Results
