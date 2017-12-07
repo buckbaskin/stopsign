@@ -71,6 +71,33 @@ def load_data(seed=None):
     test_id = y['imageid'][~y_msk].as_matrix().ravel()
     return train_X, train_y, train_id, test_X, test_y, test_id
 
+def load_data_by_image(start_id, end_id, seed=12345):
+    # lazy load image data?
+    df = pd.read_csv(BULK_DATA_FILE, header=0, skiprows=lambda x: 1 <= x <= start_id*500, nrows=500*(end_id - start_id))
+    print(df.describe())
+    import sys
+    sys.exit(1)
+    # split into class, features
+    X = df[descriptors]
+    y = df[klass]
+    print(y.describe())
+
+    # use mask to split into test, train
+    if seed is not None:
+        np.random.seed(seed)
+    img_msk = np.random.rand(NUM_IMAGES) < 0.8
+    X['train'] = y['imageid'].apply(lambda x: img_msk[x])
+    X_msk = X['train'] == 1
+    y['train'] = y['imageid'].apply(lambda x: img_msk[x])
+    y_msk = y['train'] == 1
+    train_X = X[X_msk].as_matrix()
+    test_X = X[~X_msk].as_matrix()
+    train_y = y['class  '][y_msk].as_matrix().ravel()
+    test_y = y['class  '][~y_msk].as_matrix().ravel()
+    train_id = y['imageid'][y_msk].as_matrix().ravel()
+    test_id = y['imageid'][~y_msk].as_matrix().ravel()
+    return train_X, train_y, train_id, test_X, test_y, test_id
+
 def subsample_data(X, y, ratio=0.5, seed=None):
     size = 1100
     rus = RandomUnderSampler(
@@ -94,7 +121,9 @@ if __name__ == '__main__':
 
     # load data from csv, split into training and test sets
     print('begin loading data')
-    train_X, train_y, train_id, test_X, test_y, test_id = load_data(12345)
+    train_X, train_y, train_id, test_X, test_y, test_id = load_data_by_image(0, 10)
+    import sys
+    sys.exit(1)
 
     print('train kp classifier')
     kp_nbrs = KNeighborsClassifier()
