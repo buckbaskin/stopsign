@@ -73,6 +73,32 @@ def subsample_data(X, y, ratio=0.5, seed=None):
 if __name__ == '__main__':
     ### Begin the whole process ###
 
+    '''
+    Things to work on:
+    Vary up the dataset:
+        - Classify the total image instead of just one keypoint
+            - Learn based on the classification of all of the keypoints in the 
+            image and their location
+        - With classification of image in hand, classify image with random
+        perturbations
+            - rotate the image gaussian ammount
+            - add gaussian noise to the whole image
+            - add gaussian brightness to the whole image
+            - add guassian darkness
+            - red
+            - green
+            - blue
+            - shift left, right, up, down (should be no biggy, can skip because 
+            keypoints will just shift)
+            - image flip left/right, up/down?
+            - scaling image (zoom center)
+            - affine transform
+            - perspective transform
+    Once I've played with varying the dataset, I should either find a set of 
+    images that confirm the stopsign is pretty robust or an expanded training
+    set to train with. From there, optimize KNN, 
+    '''
+
     # load data from csv, split into training and test sets
     print('begin loading data')
     train_X, train_y, test_X, test_y = load_data(12345)
