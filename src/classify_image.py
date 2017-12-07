@@ -2,6 +2,7 @@
 import rospkg
 
 import cv2
+import gc
 import numpy as np
 import pandas as pd
 
@@ -58,16 +59,16 @@ def load_data(seed=None):
     if seed is not None:
         np.random.seed(seed)
     img_msk = np.random.rand(NUM_IMAGES) < 0.8
-    X['train'] = X['imageid'].apply(lambda x: img_msk[x])
+    X['train'] = y['imageid'].apply(lambda x: img_msk[x])
     X_msk = X['train'] == 1
     y['train'] = y['imageid'].apply(lambda x: img_msk[x])
     y_msk = y['train'] == 1
     train_X = X[X_msk].as_matrix()
     test_X = X[~X_msk].as_matrix()
-    train_y = y[y_msk][:,0].as_matrix().ravel()
-    test_y = y[~y_msk][:,0].as_matrix().ravel()
-    train_id = y[y_msk][:,1].as_matrix().ravel()
-    test_id = y[~y_msk][:,1].as_matrix().ravel()
+    train_y = y['class  '][y_msk].as_matrix().ravel()
+    test_y = y['class  '][~y_msk].as_matrix().ravel()
+    train_id = y['imageid'][y_msk].as_matrix().ravel()
+    test_id = y['imageid'][~y_msk].as_matrix().ravel()
     return train_X, train_y, train_id, test_X, test_y, test_id
 
 def subsample_data(X, y, ratio=0.5, seed=None):
@@ -101,11 +102,11 @@ if __name__ == '__main__':
     kp_nbrs.fit(train_X, train_y)
 
     # I need to group by images first
-
-    image_train_X = np.zeros(len(train_X), NUM_ORBS_FEATURES)
-    image_train_y = np.zeros(len(train_y)).ravel()
-    image_test_X = np.zeros(len(test_X), NUM_ORBS_FEATURES)
-    image_test_y = np.zeros(len(test_y)).ravel()
+    gc.collect()
+    image_train_X = np.zeros((len(train_X), NUM_ORBS_FEATURES,))
+    image_train_y = np.zeros((len(train_y), 1)).ravel()
+    image_test_X = np.zeros((len(test_X), NUM_ORBS_FEATURES,))
+    image_test_y = np.zeros((len(test_y), 1)).ravel()
 
     itr = 0
     ite = 0
