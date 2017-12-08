@@ -40,6 +40,11 @@ for i in range(0, 32):
     labels.append('descr%02d' % (i,))
 labels.extend(['angle', 'classid', 'octave', 'x', 'y', 'response', 'size','imageid'])
 
+
+new_labels = ['class']
+for i in range(0, 500):
+    labels.append('orbkp%03d' % i)
+
 def transfer(read_file, write_file):
     print('time 0 sec')
     start_time = datetime.datetime.now()
@@ -51,6 +56,8 @@ def transfer(read_file, write_file):
     kp_id = 0
     image_has_stopsign = False
     writeline = [None] * 501
+
+    output_batch = []
 
     for line in read_file:
         if first_line:
@@ -77,18 +84,25 @@ def transfer(read_file, write_file):
             img_class = image_has_stopsign
             writeline[0] = str(int(img_class))
 
-            write_file.write(','.join(writeline) + '\n')
-            if imageid % 10 == 0:
-                print('Writing image %4d / %4d @ %.2f sec' % (
-                    imageid,
+            output_batch.append(','.join(writeline) + '\n')
+            if imageid % 20 == 0:
+                print('Batching image %4d / %4d @ %.2f sec total %.2f sec per' % (
+                    imageid + 1,
                     end_image_id,
-                    (datetime.datetime.now() - start_time).total_seconds(),))
+                    (datetime.datetime.now() - start_time).total_seconds(),
+                    (datetime.datetime.now() - start_time).total_seconds() / (imageid+1),))
 
             imageid += 1
             kp_id = 0
             image_has_stopsign = False
         else:
             raise ValueError('Unexpected value for imageid %d from %d' % (read_image_id, imageid))
+        if len(output_batch) > 100:
+            write_file.write(''.join(output_batch))
+            print('write batch 100 %.2f sec total %.2f sec per' % (
+                (datetime.datetime.now() - start_time).total_seconds(),
+                (datetime.datetime.now() - start_time).total_seconds() / (imageid+1)))
+            output_batch = []
 
 if __name__ == '__main__':
     ### Begin the whole process ###
