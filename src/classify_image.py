@@ -9,6 +9,7 @@ import pandas as pd
 from imblearn.under_sampling import RandomUnderSampler
 
 from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.external import joblib
 from sklearn.gaussian_process import GaussianProcessClassifier
 from sklearn.linear_model import SGDClassifier
 from sklearn.metrics import accuracy_score, precision_score, recall_score
@@ -24,6 +25,10 @@ pkg_path = rospack.get_path('stopsign')
 IMAGE_RATE = 11 # hz
 
 BULK_DATA_FILE = '%s/data/003_manual_labels/all.csv' % (pkg_path,)
+
+IMAGE_DATA_FILE = '%s/data/004_image_labels/all.csv' % (pkg_path,)
+
+KP_MODEL_STORE_FILE = '%s/data/004_image_labels/kp_classifier.pkl' % (pkg_path,)
 
 start_image_id = 0
 end_image_id = 2189
@@ -75,28 +80,15 @@ def load_data_by_image(start_id, end_id, seed=12345):
     # lazy load image data?
     df = pd.read_csv(BULK_DATA_FILE, header=0, skiprows=lambda x: 1 <= x <= start_id*500, nrows=500*(end_id - start_id))
     print(df.describe())
-    import sys
-    sys.exit(1)
-    # split into class, features
-    X = df[descriptors]
-    y = df[klass]
-    print(y.describe())
 
-    # use mask to split into test, train
-    if seed is not None:
-        np.random.seed(seed)
-    img_msk = np.random.rand(NUM_IMAGES) < 0.8
-    X['train'] = y['imageid'].apply(lambda x: img_msk[x])
-    X_msk = X['train'] == 1
-    y['train'] = y['imageid'].apply(lambda x: img_msk[x])
-    y_msk = y['train'] == 1
-    train_X = X[X_msk].as_matrix()
-    test_X = X[~X_msk].as_matrix()
-    train_y = y['class  '][y_msk].as_matrix().ravel()
-    test_y = y['class  '][~y_msk].as_matrix().ravel()
-    train_id = y['imageid'][y_msk].as_matrix().ravel()
-    test_id = y['imageid'][~y_msk].as_matrix().ravel()
-    return train_X, train_y, train_id, test_X, test_y, test_id
+    gby_imageid = df.groupby(['imageid'])
+
+    for name, indices in gby_imageid:
+        subdf = df.iloc[indices]
+    # split into class, features
+        X = subdf[descriptors]
+        y = subdf[klass]
+        yield X, y
 
 def subsample_data(X, y, ratio=0.5, seed=None):
     size = 1100
@@ -108,6 +100,80 @@ def subsample_data(X, y, ratio=0.5, seed=None):
         random_state=seed)
     return rus.fit_sample(X, y)
 
+def train_and_save_kp_classifier():
+    print('begin loading data')
+    train_X, train_y, train_id, test_X, test_y, test_id = load_data(seed=12345)
+
+    print('train kp classifier')
+    kp_nbrs = KNeighborsClassifier()
+    # train_X, train_y = subsample_data(train_X, train_y, ratio=0.5, seed=123456)
+    kp_nbrs.fit(train_X, train_y)
+
+    print('save trained classifier')
+    joblib.dump(kp_nbrs, KP_MODEL_STORE_FILE)
+
+def load_kp_and_write_data_by_image():
+    kp_nbrs = joblib.load(KP_MODEL_STORE_FILE)
+    step = 2188 // 4
+    index = 0
+
+    def columns():
+        yield 'class'
+        yield 'imageid'
+        for i in range(0, NUM_ORBS_FEATURES):
+            yield ('orbkp%03d' % (i,))
+
+    out = pd.DataFrame(columns = columns())
+    outline = np.zeroes((1, NUM_ORBS_FEATURES + 2))
+    out.to_csv(IMAGE_DATA_FILE)
+    
+    imageid = 0
+    for i in range(0, 4):
+        for X, y in load_data_by_image(i * step, i * step + step):
+            # X, y grouped by image
+            pred_y = kp_nbrs.predict(X)
+            outline[0, 0] = (y == 1).any()
+            outline[0, 0] = imageid
+            outline[0, 2:] = pred_y.flatten()
+            out.append(outline)
+            imageid += 1
+
+        with open(IMAGE_DATA_FILE, 'a') as f:
+            out.to_csv(f, header=False)
+        out.drop(out.index, inplace=True)
+
+def load_image_labels_and_classify_images():
+    df = pd.read_csv(IMAGE_DATA_FILE, header=0)
+    # mutate data back from stored form
+    def features():
+        for i in range(0, NUM_ORBS_FEATURES):
+            yield ('orbkp%03d' % (i,))
+    # split into class, features
+    X = df[features()]
+    y = df['class']
+    print(y.describe())
+
+    if seed is not None:
+        np.random.seed(seed)
+    msk = np.random.rand(len(df)) < 0.8
+    train_X = X[msk].as_matrix()
+    test_X = X[~msk].as_matrix()
+    train_y = y[msk].as_matrix().ravel()
+    test_y = y[~msk].as_matrix().ravel()
+    
+    train_X, train_y = subsample_data(train_X, train_y, ratio=0.5, seed=789)
+    gnb = GaussianNB()
+    gnb.fit(train_X, train_y)
+
+    pred_y = gnb.predict(test_X, test_y)
+
+    print(GaussianNB)
+    print('a: %.4f (percent correctly classified)' % (accuracy_score(y_true=test_y, y_pred=y_pred),))
+    print('p: %.4f (percent of correct positives)' % (precision_score(y_true=test_y, y_pred=y_pred),))
+    print('r: %.4f (percent of positive results found)' % (recall_score(y_true=test_y, y_pred=y_pred),))
+    print('---')
+
+
 if __name__ == '__main__':
     ### Begin the whole process ###
 
@@ -118,60 +184,16 @@ if __name__ == '__main__':
             - Learn based on the classification of all of the keypoints in the 
             image and their location
     '''
-
+    train_and_save_kp_classifier()
+    gc.collect()
+    
     # load data from csv, split into training and test sets
-    print('begin loading data')
-    train_X, train_y, train_id, test_X, test_y, test_id = load_data_by_image(0, 10)
+    # classify all keypoints and write classifications back to disk
+    
+    load_kp_and_write_data_by_image()
+    gc.collect()
+
+    load_image_labels_and_classify_images()
     import sys
     sys.exit(1)
-
-    print('train kp classifier')
-    kp_nbrs = KNeighborsClassifier()
-    # train_X, train_y = subsample_data(train_X, train_y, ratio=0.5, seed=123456)
-    kp_nbrs.fit(train_X, train_y)
-
-    # I need to group by images first
     gc.collect()
-    image_train_X = np.zeros((len(train_X), NUM_ORBS_FEATURES,))
-    image_train_y = np.zeros((len(train_y), 1)).ravel()
-    image_test_X = np.zeros((len(test_X), NUM_ORBS_FEATURES,))
-    image_test_y = np.zeros((len(test_y), 1)).ravel()
-
-    itr = 0
-    ite = 0
-
-    print('groupby image')
-    # compile images into features (classification of keypoints)
-    #   and the actual label for the image
-    for i in range(start_image_id, end_image_id):
-        mask = train_id == i
-        subset_X = train_X[mask]
-        if len(subset_X) > 0:
-            subset_y = train_y[mask]
-
-            predict_y = kp_nbrs.predict(subset_X).flatten()
-            image_train_X[itr, :] = predict_y
-            image_train_y[itr] = (train_y == 1).any()
-            itr += 1
-
-        subset_X = test_X[mask]
-        if len(subset_X) > 0:
-            subset_y = test_y[mask]
-
-            image_test_X[ite, :] = subset_y
-            image_test_y[ite] = (subset_y == 1).any()
-            ite += 1
-
-
-    print('train image classifier on groupby image')
-    gnb = GaussianNB()
-    gnb.fit(image_train_X, image_train_y)
-
-    image_y_pred = gnb.predict(image_test_X)
-
-    print('ready to predictt on test data')
-    print(gnb)
-    print('a: %.4f (percent correctly classified)' % (accuracy_score(y_true=image_test_y, y_pred=image_y_pred),))
-    print('p: %.4f (percent of correct positives)' % (precision_score(y_true=image_test_y, y_pred=image_y_pred),))
-    print('r: %.4f (percent of positive results found)' % (recall_score(y_true=image_test_y, y_pred=image_y_pred),))
-    print('---')
