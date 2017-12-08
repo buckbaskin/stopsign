@@ -153,8 +153,7 @@ def load_image_labels_and_classify_images():
     y = df['class']
     print(y.describe())
 
-    if seed is not None:
-        np.random.seed(seed)
+    np.random.seed(12345)
     msk = np.random.rand(len(df)) < 0.8
     train_X = X[msk].as_matrix()
     test_X = X[~msk].as_matrix()
@@ -165,7 +164,7 @@ def load_image_labels_and_classify_images():
     gnb = GaussianNB()
     gnb.fit(train_X, train_y)
 
-    pred_y = gnb.predict(test_X, test_y)
+    y_pred = gnb.predict(test_X, test_y)
 
     print(GaussianNB)
     print('a: %.4f (percent correctly classified)' % (accuracy_score(y_true=test_y, y_pred=y_pred),))
