@@ -16,6 +16,8 @@ from sklearn.neural_network import MLPClassifier
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 
+from matplotlib import pyplot as plt
+
 rospack = rospkg.RosPack()
 pkg_path = rospack.get_path('stopsign')
 
@@ -103,33 +105,52 @@ if __name__ == '__main__':
     print('begin loading data')
     train_X, train_y, test_X, test_y = load_data(12345)
 
-    Klassifiers = [GradientBoostingClassifier, 
+    Klassifiers = [
+        # GradientBoostingClassifier, 
         # GaussianProcessClassifier, # This gave a MemoryError on round 0/6
-        SGDClassifier, KNeighborsClassifier, MLPClassifier, SVC,
-        DecisionTreeClassifier]
-    num_tests = 6
+        # SGDClassifier, 
+        KNeighborsClassifier, 
+        # MLPClassifier, SVC,
+        # DecisionTreeClassifier
+        ]
+    num_tests = 10
     for index, Klassifier in enumerate(Klassifiers):
         acc = []
         pre = []
         rec = []
-        for seed in range(0, num_tests):
-            print('%s round %4d/%4d' % (Klassifier, seed, num_tests))
-            train_X, train_y = subsample_data(train_X, train_y, 0.5, seed)
-            # print('begin fitting')
-            classifier = Klassifier()
-            classifier.fit(train_X, train_y)
-            # print('end fitting')
+        for num_neighbors in range(0, 7):
+            print('num neighbors %d' % (num_neighbors + 1,))
+            acc_accum = 0
+            pre_accum = 0
+            rec_accum = 0
+            for seed in range(0, num_tests):
+                print('round %4d/%4d' % (seed, num_tests))
+                train_X, train_y = subsample_data(train_X, train_y, 0.5, seed+9001)
+                # print('begin fitting')
+                classifier = Klassifier(n_neighbors=num_neighbors+1)
+                classifier.fit(train_X, train_y)
+                # print('end fitting')
 
-            # print('begin pred')
-            y_pred = classifier.predict(test_X)
-            # print('end pred')
-            # print('begin scoring')
-            acc.append(accuracy_score(y_true=test_y, y_pred=y_pred))
-            pre.append(precision_score(y_true=test_y, y_pred=y_pred))
-            rec.append(recall_score(y_true=test_y, y_pred=y_pred))
-            # print('end scoring')
+                # print('begin pred')
+                y_pred = classifier.predict(test_X)
+                # print('end pred')
+                # print('begin scoring')
+                acc_accum += accuracy_score(y_true=test_y, y_pred=y_pred)
+                pre_accum += precision_score(y_true=test_y, y_pred=y_pred)
+                rec_accum += recall_score(y_true=test_y, y_pred=y_pred)
+                # print('end scoring')
+            acc.append(acc_accum / num_tests)
+            pre.append(pre_accum / num_tests)
+            rec.append(rec_accum / num_tests)
         print(Klassifier)
-        print('a: %.4f (percent correctly classified)' % (sum(acc)/num_tests,))
-        print('p: %.4f (percent of correct positives)' % (sum(pre)/num_tests,))
-        print('r: %.4f (percent of positive results found)' % (sum(rec)/num_tests,))
+        print('a: %.4f (percent correctly classified)' % (sum(acc)/len(acc),))
+        print('p: %.4f (percent of correct positives)' % (sum(pre)/len(pre),))
+        print('r: %.4f (percent of positive results found)' % (sum(rec)/len(rec),))
         print('---')
+        print('plot data')
+        print(pre)
+        print(rec)
+        plt.plot(x=pre, y=rec) # , c=['b', 'g', 'r', 'c', 'm', 'y', 'k'])
+        plt.xlabel('Precision')
+        plt.ylabel('Recall')
+        plt.show()

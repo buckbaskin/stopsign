@@ -10,7 +10,7 @@ IN_IMAGE = '%s/data/002_original_images/%s' % (pkg_path, 'frame%04d.jpg')
 
 OUT_IMAGE = '%s/data/006_gaussian_images/%s' % (pkg_path, 'frame%04d.jpg')
 
-start_image_id = 0
+start_image_id = 0  
 end_image_id = 2189
 
 def get_image(image_id):
@@ -31,11 +31,13 @@ def add_gaussian(og_img):
 if __name__ == '__main__':
     np.random.seed(12345)
     for image_id in range(start_image_id, end_image_id):
+        if image_id % 10 == 0:
+            print('%d / %d' % (image_id + 1, end_image_id + 1,))
         og_img = get_image(image_id)
         noise_img = add_gaussian(og_img)
 
-        cv2.imshow('original', og_img)
-        cv2.waitKey(0)
-        cv2.imshow('noisey', noise_img)
-        cv2.waitKey(0)
+        # cv2.imshow('original', og_img)
+        # cv2.waitKey(0)
+        # cv2.imshow('noisey', noise_img)
+        # cv2.waitKey(0)
         set_image(noise_img, image_id)
