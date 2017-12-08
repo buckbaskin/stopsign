@@ -1,24 +1,11 @@
 #!/usr/bin/env python
-import rospkg
-
-import cv2
 import datetime
-import gc
 import joblib
 import numpy as np
 import pandas as pd
+import rospkg
 
 from imblearn.under_sampling import RandomUnderSampler
-
-from sklearn.ensemble import GradientBoostingClassifier
-from sklearn.gaussian_process import GaussianProcessClassifier
-from sklearn.linear_model import SGDClassifier
-from sklearn.metrics import accuracy_score, precision_score, recall_score
-from sklearn.naive_bayes import GaussianNB
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.neural_network import MLPClassifier
-from sklearn.svm import SVC
-from sklearn.tree import DecisionTreeClassifier
 
 rospack = rospkg.RosPack()
 pkg_path = rospack.get_path('stopsign')
