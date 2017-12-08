@@ -6,6 +6,7 @@ import pandas as pd
 import rospkg
 
 from imblearn.under_sampling import RandomUnderSampler
+from sklearn.neighbors import KNeighborsClassifier
 
 rospack = rospkg.RosPack()
 pkg_path = rospack.get_path('stopsign')
