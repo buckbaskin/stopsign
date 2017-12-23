@@ -13,8 +13,8 @@ from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.linear_model import SGDClassifier
 from sklearn.metrics import accuracy_score, precision_score, recall_score
 from sklearn.neighbors import KNeighborsClassifier
-# from sklearn.neural_network import MLPClassifier
-# from sklearn.svm import SVC
+from sklearn.neural_network import MLPClassifier
+from sklearn.svm import SVC
 # from sklearn.tree import DecisionTreeClassifier
 
 # from matplotlib import pyplot as plt
@@ -82,6 +82,37 @@ def subsample_data(X, y, ratio=0.5, seed=None):
         random_state=seed)
     return rus.fit_sample(X, y)
 
+def increment_index_list(index, max_list):
+    index[-1] += 1
+    if index[-1] >= max_list[-1]:
+        for i in range(len(index) - 1, 0, -1):
+            if index[i] >= max_list[i]:
+                index[i] = 0
+                index[i-1] += 1
+
+    return index
+
+def make_all_combinations(dict_of_arglists):
+    input_args = list(dict_of_arglists.keys())
+    max_list = []
+    for input_key in input_args:
+        max_list.append(len(dict_of_arglists[input_key]))
+    index_list = [0] * len(input_args)
+
+    count = 1
+    for val in max_list:
+        count *= val
+
+    for _ in range(count):
+        input_vals = []
+        for index, input_key in enumerate(input_args):
+            input_vals.append(dict_of_arglists[input_key][index_list[index]])
+        combined = zip(input_args, input_vals)
+        d = dict(combined)
+        print(d)
+        yield d
+        index_list = increment_index_list(index_list, max_list)
+
 if __name__ == '__main__':
     ### Begin the whole process ###
 
@@ -119,271 +150,46 @@ if __name__ == '__main__':
         # GradientBoostingClassifier, 
         # GaussianProcessClassifier, # This gave a MemoryError on round 0/6
         # SGDClassifier, 
-        KNeighborsClassifier, # removed due to performance with 500 keypoints (30 sec per predict) 
-        # MLPClassifier,
+        # KNeighborsClassifier, # removed due to performance with 500 keypoints (30 sec per predict) 
+        MLPClassifier,
         # SVC,
         # DecisionTreeClassifier,
         ]
 
-    gbc_configs = [
-    {
-    'loss': 'exponential',
-    'n_estimators': 50,
-    'max_depth': 2,
-    },
-    {
-    'loss': 'deviance',
-    'n_estimators': 50,
-    'max_depth': 2,
-    },
-    {
-    'loss': 'exponential',
-    'n_estimators': 100,
-    'max_depth': 2,
-    },
-    {
-    'loss': 'deviance',
-    'n_estimators': 100,
-    'max_depth': 2,
-    },
-    {
-    'loss': 'exponential',
-    'n_estimators': 150,
-    'max_depth': 2,
-    },
-    {
-    'loss': 'deviance',
-    'n_estimators': 150,
-    'max_depth': 2,
-    },
-    {
-    'loss': 'exponential',
-    'n_estimators': 200,
-    'max_depth': 2,
-    },
-    {
-    'loss': 'deviance',
-    'n_estimators': 200,
-    'max_depth': 2,
-    },
-    {
-    'loss': 'exponential',
-    'n_estimators': 50,
-    'max_depth': 3,
-    },
-    {
-    'loss': 'deviance',
-    'n_estimators': 50,
-    'max_depth': 3,
-    },
-    {
-    'loss': 'exponential',
-    'n_estimators': 100,
-    'max_depth': 3,
-    },
-    {
-    'loss': 'deviance',
-    'n_estimators': 100,
-    'max_depth': 3,
-    },
-    {
-    'loss': 'exponential',
-    'n_estimators': 150,
-    'max_depth': 3,
-    },
-    {
-    'loss': 'deviance',
-    'n_estimators': 150,
-    'max_depth': 3,
-    },
-    {
-    'loss': 'exponential',
-    'n_estimators': 200,
-    'max_depth': 3,
-    },
-    {
-    'loss': 'deviance',
-    'n_estimators': 200,
-    'max_depth': 3,
-    },
-    {
-    'loss': 'exponential',
-    'n_estimators': 50,
-    'max_depth': 5,
-    },
-    {
-    'loss': 'deviance',
-    'n_estimators': 50,
-    'max_depth': 5,
-    },
-    {
-    'loss': 'exponential',
-    'n_estimators': 100,
-    'max_depth': 5,
-    },
-    {
-    'loss': 'deviance',
-    'n_estimators': 100,
-    'max_depth': 5,
-    },
-    {
-    'loss': 'exponential',
-    'n_estimators': 150,
-    'max_depth': 5,
-    },
-    {
-    'loss': 'deviance',
-    'n_estimators': 150,
-    'max_depth': 5,
-    },
-    {
-    'loss': 'exponential',
-    'n_estimators': 200,
-    'max_depth': 5,
-    },
-    {
-    'loss': 'deviance',
-    'n_estimators': 200,
-    'max_depth': 5,
-    },
-    ]
+    gbc_spec = {
+        'loss': ['exponential', 'deviance',],
+        'n_estimators': [50, 100, 150, 200,],
+        'max_depth': [2, 3, 4, 5,],
+    }
 
-    sgd_configs = [
-    {
-    'loss': 'hinge',
-    'penalty': 'l2',
-    },
-    {
-    'loss': 'hinge',
-    'penalty': 'l1',
-    'max_iter': 1,
-    },
-    {
-    'loss': 'hinge',
-    'penalty': 'l1',
-    'max_iter': 2,
-    },
-    {
-    'loss': 'hinge',
-    'penalty': 'l1',
-    'max_iter': 3,
-    },
-    {
-    'loss': 'hinge',
-    'penalty': 'l1',
-    'max_iter': 4,
-    },
-    {
-    'loss': 'hinge',
-    'penalty': 'l1',
-    'max_iter': 5,
-    },
-    {
-    'loss': 'hinge',
-    'penalty': 'l1',
-    'max_iter': 10,
-    },
-    {
-    'loss': 'hinge',
-    'penalty': 'l1',
-    'max_iter': 25,
-    },
-    {
-    'loss': 'hinge',
-    'penalty': 'l1',
-    'max_iter': 50,
-    },
-    {
-    'loss': 'hinge',
-    'penalty': 'l1',
-    'max_iter': 125,
-    },
-    {
-    'loss': 'hinge',
-    'penalty': 'l1',
-    'max_iter': 250,
-    },
-    {
-    'loss': 'hinge',
-    'penalty': 'l1',
-    'max_iter': 500
-    },
-    {
-    'loss': 'hinge',
-    'penalty': 'l1',
-    'max_iter': 500
-    },
-    {
-    'loss': 'hinge',
-    'penalty': 'l1',
-    'max_iter': 1000
-    },
-    {
-    'loss': 'hinge',
-    'penalty': 'l1',
-    'max_iter': 2000
-    },
-    {
-    'loss': 'hinge',
-    'penalty': 'elasticnet',
-    },
-    {
-    'loss': 'log',
-    'penalty': 'l2',
-    },
-    {
-    'loss': 'log',
-    'penalty': 'l1',
-    },
-    {
-    'loss': 'log',
-    'penalty': 'elasticnet',
-    },
-    {
-    'loss': 'modified_huber',
-    'penalty': 'l2',
-    },
-    {
-    'loss': 'modified_huber',
-    'penalty': 'l1',
-    },
-    {
-    'loss': 'modified_huber',
-    'penalty': 'elasticnet',
-    },
-    ]
+    sgd_spec = {
+        'loss': ['hinge', 'log', 'modified_huber',],
+        'penalty': ['l2', 'l1', 'elasticnet',],
+        'max_iter': [1, 5, 10, 25, 50, 100, 250, 500, 1000, 2000,],
+    }
 
-    knn_configs = [
-    {
-    'n_neighbors': 2,
-    'weights': 'uniform',
-    },
-    {
-    'n_neighbors': 5,
-    'weights': 'uniform',
-    },
-    {
-    'n_neighbors': 10,
-    'weights': 'uniform',
-    },
-    {
-    'n_neighbors': 2,
-    'weights': 'distance',
-    },
-    {
-    'n_neighbors': 5,
-    'weights': 'distance',
-    },
-    {
-    'n_neighbors': 10,
-    'weights': 'distance',
-    },
-    ]
+    knn_spec = {
+        'n_neighbors': [2, 5, 10],
+        'weights': ['uniform', 'distance',],
+    }
+
+    mlp_spec = {
+        'hidden_layer_sizes': [(100,), (50,), (200,), (100, 100,), (100, 50,), (100, 50, 25,),],
+        'activation': ['logistic', 'tanh', 'relu',],
+    }
+
+    svc_spec = {
+        'C': [0.5, 1.0, 2.0,],
+        'kernel': ['linear', 'poly', 'rbf', 'sigmoid',],
+        # 'degree': [2, 3, 4, 5, 6,], # explore if poly kernel is promising
+        'shrinking': [True, False,],
+    }
 
     Klassifier_configs = []
-    # Klassifier_configs.append(gbc_configs)
-    # Klassifier_configs.append(sgd_configs)
-    Klassifier_configs.append(knn_configs)
+    # Klassifier_configs.append(gbc_spec)
+    # Klassifier_configs.append(sgd_spec)
+    # Klassifier_configs.append(knn_spec)
+    Klassifier_configs.append(mlp_spec)
 
     num_tests = 10
 
@@ -393,14 +199,14 @@ if __name__ == '__main__':
         rec = []
         tim = []
 
-        for config_setup in Klassifier_configs[index]:
+        for config_setup in make_all_combinations(Klassifier_configs[index]):
             print('current config: %s' % (config_setup,))
             acc_accum = 0
             pre_accum = 0
             rec_accum = 0
             tim_accum = 0
             for seed in range(0, num_tests):
-                print('round %4d/%4d' % (seed+1, num_tests))
+                # print('round %4d/%4d' % (seed+1, num_tests))
                 train_X, train_y = subsample_data(train_X, train_y, 0.5, seed+9002)
                 # print('begin fitting')
                 classifier = Klassifier(**config_setup)
@@ -430,9 +236,11 @@ if __name__ == '__main__':
         print(Klassifier)
         print('a: %.4f (avg percent correctly classified)' % (sum(acc)/len(acc),))
         acc_index = acc.index(max(acc))
-        print('   %.4f (max) %s' % (max(acc), Klassifier_configs[index][acc_index],))
+        print('   %.4f (max)' % (max(acc),))
+        # print('   %.4f (max) %s' % (max(acc), Klassifier_configs[index][acc_index],))
         print('p: %.4f (avg percent of correct positives)' % (sum(pre)/len(pre),))
         print('r: %.4f (avg percent of positive results found)' % (sum(rec)/len(rec),))
         print('t: %.4f avg sec' % (sum(tim) / len(tim)))
         tim_index = tim.index(min(tim))
-        print('   %.4f (min) %s' % (min(tim), Klassifier_configs[index][tim_index],))
+        print('   %.4f sec (minimum)' % (min(tim),))
+        # print('   %.4f (min) %s' % (min(tim), Klassifier_configs[index][tim_index],))

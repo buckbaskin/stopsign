@@ -33,19 +33,47 @@ Round 2 primary goals/requirements: 30 fps for predictions (about 0.033 sec per 
 
 ### `KNeighborsClassifier`
 
-The KNeighborsClassifier was originally chosen for its accuracy. It's prediction latency is very lacking. It achieves 86% accuracy with 2 neighbors with uniform weights, which is also the fastest algorithm. It took about 11.5 sec for it to classify the example data. This corresponds to about 30 seconds to classify an image, which is about 900x slower than the goal. When transfered to the test case, the other algorithms should aim for a best case of at least better than 0.1 sec.
+The KNeighborsClassifier was originally chosen for its accuracy. 
+It's prediction latency is very lacking. 
+It achieves 86% accuracy with 2 neighbors with uniform weights, which is also the fastest algorithm (with little variation based on parameters).
+It took about 11.5 sec for it to classify the example data.
+This corresponds to about 30 seconds to classify an image, which is about 900x slower than the goal.
+When transfered to the test case, the other algorithms should aim for a best case of at least better than 0.1 sec.
+The other algorithms may not scale the same way as the `KNeighborsClassifier`, so the true recommendation is that they other algorithms should be orders of magnitude faster.
 
 ### `GradientBoostingClassifier`
 
-The classifier showed obvious correlation between the parameters selected, accuracy and prediction time. The average accuracy was 79%, with the maximum accuracy of 83% scored at a `max_depth` of 5 and a `num_estimators` of 200. The fastest algorithm was at the other extreme: 50 estimators with a maximum depth of 2. This algorithm took about 0.199 sec per prediction compared with an average of 0.537 sec per prediction. 
+The classifier showed obvious correlation between the parameters selected, accuracy and prediction time.
+The average accuracy was 79%, with the maximum accuracy of 83% scored at a `max_depth` of 5 and a `num_estimators` of 200.
+The fastest algorithm was at the other extreme: 50 estimators with a maximum depth of 2.
+This algorithm took about 0.199 sec per prediction compared with an average of 0.537 sec per prediction. 
 
 The accuracy meets the requirement for this round, but the prediction latency is likely insufficient for the current goal.
 
 ### `SGDClassifier`
 
-The stochastic gradient descent classifier performance has been variable and seems dependent on the seed or other less-understood factors. The `l1` loss function seems most effective. The `hinge` (linear) and `log` loss function seem to exchange the rights for most accurate (paired with `l1`) depending on factors that don't seem to be controlled by the parameters that I'm varying (at least not consistently). Maximum accuracy varies between 77% and 80%. In general, the algorithms all perform the same because the parameters that were varied are training-time parameters. The average prediction time is about 0.018 sec.
+The stochastic gradient descent classifier performance has been variable and seems dependent on the seed or other less-understood factors.
+The `l1` loss function seems most effective.
+The `hinge` (linear) and `log` loss function seem to exchange the rights for most accurate (paired with `l1`) depending on factors that don't seem to be controlled by the parameters that I'm varying (at least not consistently).
+Maximum accuracy varies between 77% and 80%.
+In general, the algorithms all demonstrate about the same prediction latency because the parameters that were varied are training-time parameters.
+The average prediction time is about 0.018 sec.
 
 The accuracy and prediction latency both meet requirements. The latency is a significant improvment over the KNN algorithm with little accuracy penalty (about 6%-8%).
+
+### `MLPClassifier`
+
+The multilayer perceptron classifier had a maximum accuracy of 75% (logistic activation, 1 hidden layer of 200 units).
+The average accuracy was 71%. 
+The average time to run was 0.645 seconds.
+The fastest run time was 0.1378 seconds (relu activation, 1 hidden layer of 50 units). This had about 65% accuracy.
+One consideration here is that the algorithm hits a non-convergence warning at 200 iterations.
+In practice, this doesn't seem to have significantly impacted the average performance of the neural networks.
+On the other hand, the fastest networks aren't as fast as some other algorithms while achieving lower accuracy performance.
+
+The overall algorithm seems to meet the requirements.
+It seems that this classifier makes worse latency/accuracy tradeoffs than other classifiers.
+Neural network architecture is an open field of investigation, so future work may be done optimizing the tradeoff boundary.
 
 ## Further Considerations
 
