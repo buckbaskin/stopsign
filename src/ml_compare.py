@@ -12,7 +12,7 @@ from sklearn.ensemble import GradientBoostingClassifier
 # from sklearn.gaussian_process import GaussianProcessClassifier
 from sklearn.linear_model import SGDClassifier
 from sklearn.metrics import accuracy_score, precision_score, recall_score
-# from sklearn.neighbors import KNeighborsClassifier
+from sklearn.neighbors import KNeighborsClassifier
 # from sklearn.neural_network import MLPClassifier
 # from sklearn.svm import SVC
 # from sklearn.tree import DecisionTreeClassifier
@@ -118,8 +118,8 @@ if __name__ == '__main__':
     Klassifiers = [
         # GradientBoostingClassifier, 
         # GaussianProcessClassifier, # This gave a MemoryError on round 0/6
-        SGDClassifier, 
-        # KNeighborsClassifier, # removed due to performance with 500 keypoints (30 sec per predict) 
+        # SGDClassifier, 
+        KNeighborsClassifier, # removed due to performance with 500 keypoints (30 sec per predict) 
         # MLPClassifier,
         # SVC,
         # DecisionTreeClassifier,
@@ -248,7 +248,6 @@ if __name__ == '__main__':
     },
     ]
 
-
     sgd_configs = [
     {
     'loss': 'hinge',
@@ -353,9 +352,38 @@ if __name__ == '__main__':
     'penalty': 'elasticnet',
     },
     ]
+
+    knn_configs = [
+    {
+    'n_neighbors': 2,
+    'weights': 'uniform',
+    },
+    {
+    'n_neighbors': 5,
+    'weights': 'uniform',
+    },
+    {
+    'n_neighbors': 10,
+    'weights': 'uniform',
+    },
+    {
+    'n_neighbors': 2,
+    'weights': 'distance',
+    },
+    {
+    'n_neighbors': 5,
+    'weights': 'distance',
+    },
+    {
+    'n_neighbors': 10,
+    'weights': 'distance',
+    },
+    ]
+
     Klassifier_configs = []
     # Klassifier_configs.append(gbc_configs)
-    Klassifier_configs.append(sgd_configs)
+    # Klassifier_configs.append(sgd_configs)
+    Klassifier_configs.append(knn_configs)
 
     num_tests = 10
 
@@ -372,7 +400,7 @@ if __name__ == '__main__':
             rec_accum = 0
             tim_accum = 0
             for seed in range(0, num_tests):
-                # print('round %4d/%4d' % (seed+1, num_tests))
+                print('round %4d/%4d' % (seed+1, num_tests))
                 train_X, train_y = subsample_data(train_X, train_y, 0.5, seed+9002)
                 # print('begin fitting')
                 classifier = Klassifier(**config_setup)

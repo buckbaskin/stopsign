@@ -31,13 +31,21 @@ Using existing data, train each algorithm a bunch of times with different initia
 
 Round 2 primary goals/requirements: 30 fps for predictions (about 0.033 sec per prediction) and accuracy of 69% or higher. This means that if 2 keypoints are classified as stopsigns, then the expectation is that there's an overall image classification accuracy of about 90%. The test data is much larger than 500 keypoint descriptors, so the cutoff for performance at this point is faster than K-Nearest-Neighbors (or at least one set of parameters that outperforms the average KNN).
 
-### Round 2: `GradientBoostingClassifier`
+### `KNeighborsClassifier`
 
-The classifier showed obvious correlation between the parameters selected, accuracy and prediction time. The average accuracy was 79%, with the maximum accuracy of 83% scored at a `max_depth` of 5 and a `num_estimators` of 200. The fastest algorithm was at the other extreme: 50 estimators with a maximum depth of 2. This algorithm took about 0.199 sec per prediction compared with an average of 0.537 sec per prediction.
+The KNeighborsClassifier was originally chosen for its accuracy. It's prediction latency is very lacking. It achieves 86% accuracy with 2 neighbors with uniform weights, which is also the fastest algorithm. It took about 11.5 sec for it to classify the example data. This corresponds to about 30 seconds to classify an image, which is about 900x slower than the goal. When transfered to the test case, the other algorithms should aim for a best case of at least better than 0.1 sec.
 
-### Round 2: `SGDClassifier`
+### `GradientBoostingClassifier`
+
+The classifier showed obvious correlation between the parameters selected, accuracy and prediction time. The average accuracy was 79%, with the maximum accuracy of 83% scored at a `max_depth` of 5 and a `num_estimators` of 200. The fastest algorithm was at the other extreme: 50 estimators with a maximum depth of 2. This algorithm took about 0.199 sec per prediction compared with an average of 0.537 sec per prediction. 
+
+The accuracy meets the requirement for this round, but the prediction latency is likely insufficient for the current goal.
+
+### `SGDClassifier`
 
 The stochastic gradient descent classifier performance has been variable and seems dependent on the seed or other less-understood factors. The `l1` loss function seems most effective. The `hinge` (linear) and `log` loss function seem to exchange the rights for most accurate (paired with `l1`) depending on factors that don't seem to be controlled by the parameters that I'm varying (at least not consistently). Maximum accuracy varies between 77% and 80%. In general, the algorithms all perform the same because the parameters that were varied are training-time parameters. The average prediction time is about 0.018 sec.
+
+The accuracy and prediction latency both meet requirements. The latency is a significant improvment over the KNN algorithm with little accuracy penalty (about 6%-8%).
 
 ## Further Considerations
 
