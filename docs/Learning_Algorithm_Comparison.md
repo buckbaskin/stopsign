@@ -29,11 +29,13 @@ See `ml_compare.py`
 
 Using existing data, train each algorithm a bunch of times with different initialization parameters. Additionally, the prediction time is considered. Each algorithm is run 10 times with different seeds and then averaged. This averaging still leads to some interesting behavior and doesn't make the results as stable and consistent as I would have liked.
 
+Round 2 primary goals/requirements: 30 fps for predictions (about 0.033 sec per prediction) and accuracy of 69% or higher. This means that if 2 keypoints are classified as stopsigns, then the expectation is that there's an overall image classification accuracy of about 90%. The test data is much larger than 500 keypoint descriptors, so the cutoff for performance at this point is faster than K-Nearest-Neighbors (or at least one set of parameters that outperforms the average KNN).
+
 ### Round 2: `GradientBoostingClassifier`
 
 The classifier showed obvious correlation between the parameters selected, accuracy and prediction time. The average accuracy was 79%, with the maximum accuracy of 83% scored at a `max_depth` of 5 and a `num_estimators` of 200. The fastest algorithm was at the other extreme: 50 estimators with a maximum depth of 2. This algorithm took about 0.199 sec per prediction compared with an average of 0.537 sec per prediction.
 
-### Round 3: `SGDClassifier`
+### Round 2: `SGDClassifier`
 
 The stochastic gradient descent classifier performance has been variable and seems dependent on the seed or other less-understood factors. The `l1` loss function seems most effective. The `hinge` (linear) and `log` loss function seem to exchange the rights for most accurate (paired with `l1`) depending on factors that don't seem to be controlled by the parameters that I'm varying (at least not consistently). Maximum accuracy varies between 77% and 80%. In general, the algorithms all perform the same because the parameters that were varied are training-time parameters. The average prediction time is about 0.018 sec.
 
