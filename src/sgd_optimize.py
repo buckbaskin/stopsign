@@ -109,7 +109,6 @@ def make_all_combinations(dict_of_arglists):
             input_vals.append(dict_of_arglists[input_key][index_list[index]])
         combined = zip(input_args, input_vals)
         d = dict(combined)
-        # print(d)
         yield d
         index_list = increment_index_list(index_list, max_list)
 
@@ -175,39 +174,42 @@ if __name__ == '__main__':
             tim_accum = 0
             for seed in range(0, num_tests):
                 # print('round %4d/%4d' % (seed+1, num_tests))
-                train_X, train_y = subsample_data(train_X, train_y, 0.5, seed+9003)
-                # print('begin fitting')
+                train_X, train_y = subsample_data(train_X, train_y, 0.5, seed+9004)
+                
                 classifier = Klassifier(**config_setup)
                 classifier.fit(train_X, train_y)
-                # print('end fitting')
+                
+                X_splits = np.array_split(test_X, 437)
+                y_splits = np.array_split(test_y, 437)
 
-                # TODO(buckbaskin): rewrite to split into sets of 500 kp
-                # print('begin pred')
-                stime = datetime.datetime.now()
-                y_pred = classifier.predict(test_X)
-                etime = datetime.datetime.now()
-                # print('end pred')
-                # print('begin scoring')
-                acc_accum += accuracy_score(y_true=test_y, y_pred=y_pred)
-                pre_accum += precision_score(y_true=test_y, y_pred=y_pred)
-                rec_accum += recall_score(y_true=test_y, y_pred=y_pred)
-                tim_accum += (etime - stime).total_seconds()
+                split_version = zip(X_splits, y_splits)
+                for test_X_sub, test_y_sub in split_version:
+                    # print('begin pred')
+                    stime = datetime.datetime.now()
+                    y_pred = classifier.predict(test_X_sub)
+                    etime = datetime.datetime.now()
+                    # print('end pred')
+                    # print('begin scoring')
+                    acc_accum += accuracy_score(y_true=test_y_sub, y_pred=y_pred)
+                    pre_accum += precision_score(y_true=test_y_sub, y_pred=y_pred)
+                    rec_accum += recall_score(y_true=test_y_sub, y_pred=y_pred)
+                    tim_accum += (etime - stime).total_seconds()
                 # print('end scoring')
-            acc.append(acc_accum / num_tests)
-            pre.append(pre_accum / num_tests)
-            rec.append(rec_accum / num_tests)
-            tim.append(tim_accum / num_tests)
-            print('a: %.4f (percent correctly classified)' % (acc_accum / num_tests,))
-            print('p: %.4f (percent of correct positives)' % (pre_accum / num_tests,))
-            print('r: %.4f (percent of positive results found)' % (rec_accum / num_tests,))
-            print('t: %.4f sec' % (tim_accum / num_tests,))
-            
+            acc.append(acc_accum / (num_tests*437))
+            pre.append(pre_accum / (num_tests*437))
+            rec.append(rec_accum / (num_tests*437))
+            tim.append(tim_accum / (num_tests*437))
+            print('a: %.4f (percent correctly classified)' % (acc_accum / (num_tests*437),))
+            print('p: %.4f (percent of correct positives)' % (pre_accum / (num_tests*437),))
+            print('r: %.4f (percent of positive results found)' % (rec_accum / (num_tests*437),))
+            print('t: %.6f sec' % (tim_accum / (num_tests*437),))       
+
         print(Klassifier)
         print('Averaged over %d tests' % (num_tests,))
         # better accuracy summary
         print('a: %.4f (avg percent correctly classified)' % (sum(acc)/len(acc),))
         print('Top Accuracies')
-        print('90 percent cutoff')
+        print('90 percent of max accuracy cutoff')
         sorted_ = sorted(enumerate(acc), key=lambda x: -x[1])
         top_acc = sorted_[0][1]
         sorted_ = filter(lambda x: x[1] >= top_acc * 0.9, sorted_)
@@ -217,9 +219,9 @@ if __name__ == '__main__':
         print('p: %.4f (avg percent of correct positives)' % (sum(pre)/len(pre),))
         print('r: %.4f (avg percent of positive results found)' % (sum(rec)/len(rec),))
 
-        print('t: %.4f avg sec' % (sum(tim) / len(tim)))
+        print('t: %.6f avg sec' % (sum(tim) / len(tim)))
         print('Top Prediction Latencies')
         print('Top 10')
         sorted_ = sorted(enumerate(tim), key=lambda x: x[1])
         for tim_index, pred_latency in sorted_[:10]:
-            print('%.4f | %s' % (pred_latency, Klassifier_configs[tim_index]))
+            print('%.6f | %s' % (pred_latency, Klassifier_configs[tim_index]))
