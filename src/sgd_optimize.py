@@ -159,7 +159,7 @@ if __name__ == '__main__':
     Klassifier_configs = []
     Klassifier_configs.extend(make_all_combinations(sgd_spec))
 
-    num_tests = 1
+    num_tests = 10
 
     for index, Klassifier in enumerate(Klassifiers):
         acc = []
@@ -175,7 +175,7 @@ if __name__ == '__main__':
             tim_accum = 0
             for seed in range(0, num_tests):
                 # print('round %4d/%4d' % (seed+1, num_tests))
-                train_X, train_y = subsample_data(train_X, train_y, 0.5, seed+9002)
+                train_X, train_y = subsample_data(train_X, train_y, 0.5, seed+9003)
                 # print('begin fitting')
                 classifier = Klassifier(**config_setup)
                 classifier.fit(train_X, train_y)
@@ -203,11 +203,15 @@ if __name__ == '__main__':
             print('t: %.4f sec' % (tim_accum / num_tests,))
             
         print(Klassifier)
+        print('Averaged over %d tests' % (num_tests,))
         # better accuracy summary
         print('a: %.4f (avg percent correctly classified)' % (sum(acc)/len(acc),))
         print('Top Accuracies')
+        print('90 percent cutoff')
         sorted_ = sorted(enumerate(acc), key=lambda x: -x[1])
-        for acc_index, accuracy in sorted_[:10]:
+        top_acc = sorted_[0][1]
+        sorted_ = filter(lambda x: x[1] >= top_acc * 0.9, sorted_)
+        for acc_index, accuracy in sorted_[:15]:
             print('% 4.2f | %s' % (accuracy * 100, Klassifier_configs[acc_index]))
 
         print('p: %.4f (avg percent of correct positives)' % (sum(pre)/len(pre),))
@@ -215,6 +219,7 @@ if __name__ == '__main__':
 
         print('t: %.4f avg sec' % (sum(tim) / len(tim)))
         print('Top Prediction Latencies')
+        print('Top 10')
         sorted_ = sorted(enumerate(tim), key=lambda x: x[1])
         for tim_index, pred_latency in sorted_[:10]:
             print('%.4f | %s' % (pred_latency, Klassifier_configs[tim_index]))
