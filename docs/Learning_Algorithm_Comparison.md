@@ -109,12 +109,12 @@ Both classifiers achieved prediction latency of less than 0.018 sec in multiple 
 SGD achieved this performance with 77%, 74%, 73%, 64% accuracy.
 Decision Trees achieved this performance with 78% correctly classified (all `max_depth=2` options).
 
+The Decision Tree classifier accuracy was largely invariant to configuration changes.
+It may be investigated later.
+
 The SGD classifier accuracy appears more tuneable.
 The average accuracy was 66%, but the highest accuracy was more than 10% better. 
 The average prediction latency was 0.0183 and the fastest prediction latency was 0.0176, so the prediction latency is largely invariant to the parameter changes.
-
-The Decision Tree classifier accuracy was largely invariant to configuration changes.
-It may be investigated later.
 
 ## Further Considerations
 
