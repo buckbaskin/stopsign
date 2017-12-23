@@ -57,6 +57,9 @@ def load_data(seed=None):
     # split into class, features
     X = df[descriptors]
     y = df[klass]
+    print('X.describe()')
+    print(X.describe())
+    print('y.describe()')
     print(y.describe())
 
     # use mask to split into test, train
@@ -129,12 +132,37 @@ if __name__ == '__main__':
     'max_depth': 2,
     },
     {
+    'loss': 'deviance',
+    'n_estimators': 50,
+    'max_depth': 2,
+    },
+    {
     'loss': 'exponential',
     'n_estimators': 100,
     'max_depth': 2,
     },
     {
+    'loss': 'deviance',
+    'n_estimators': 100,
+    'max_depth': 2,
+    },
+    {
     'loss': 'exponential',
+    'n_estimators': 150,
+    'max_depth': 2,
+    },
+    {
+    'loss': 'deviance',
+    'n_estimators': 150,
+    'max_depth': 2,
+    },
+    {
+    'loss': 'exponential',
+    'n_estimators': 200,
+    'max_depth': 2,
+    },
+    {
+    'loss': 'deviance',
     'n_estimators': 200,
     'max_depth': 2,
     },
@@ -144,12 +172,37 @@ if __name__ == '__main__':
     'max_depth': 3,
     },
     {
+    'loss': 'deviance',
+    'n_estimators': 50,
+    'max_depth': 3,
+    },
+    {
     'loss': 'exponential',
     'n_estimators': 100,
     'max_depth': 3,
     },
     {
+    'loss': 'deviance',
+    'n_estimators': 100,
+    'max_depth': 3,
+    },
+    {
     'loss': 'exponential',
+    'n_estimators': 150,
+    'max_depth': 3,
+    },
+    {
+    'loss': 'deviance',
+    'n_estimators': 150,
+    'max_depth': 3,
+    },
+    {
+    'loss': 'exponential',
+    'n_estimators': 200,
+    'max_depth': 3,
+    },
+    {
+    'loss': 'deviance',
     'n_estimators': 200,
     'max_depth': 3,
     },
@@ -159,54 +212,33 @@ if __name__ == '__main__':
     'max_depth': 5,
     },
     {
+    'loss': 'deviance',
+    'n_estimators': 50,
+    'max_depth': 5,
+    },
+    {
     'loss': 'exponential',
     'n_estimators': 100,
     'max_depth': 5,
     },
     {
+    'loss': 'deviance',
+    'n_estimators': 100,
+    'max_depth': 5,
+    },
+    {
+    'loss': 'exponential',
+    'n_estimators': 150,
+    'max_depth': 5,
+    },
+    {
+    'loss': 'deviance',
+    'n_estimators': 150,
+    'max_depth': 5,
+    },
+    {
     'loss': 'exponential',
     'n_estimators': 200,
-    'max_depth': 5,
-    },
-    # deviance
-    {
-    'loss': 'deviance',
-    'n_estimators': 50,
-    'max_depth': 2,
-    },
-    {
-    'loss': 'deviance',
-    'n_estimators': 100,
-    'max_depth': 2,
-    },
-    {
-    'loss': 'deviance',
-    'n_estimators': 200,
-    'max_depth': 2,
-    },
-    {
-    'loss': 'deviance',
-    'n_estimators': 50,
-    'max_depth': 3,
-    },
-    {
-    'loss': 'deviance',
-    'n_estimators': 100,
-    'max_depth': 3,
-    },
-    {
-    'loss': 'deviance',
-    'n_estimators': 200,
-    'max_depth': 3,
-    },
-    {
-    'loss': 'deviance',
-    'n_estimators': 50,
-    'max_depth': 5,
-    },
-    {
-    'loss': 'deviance',
-    'n_estimators': 100,
     'max_depth': 5,
     },
     {
@@ -221,12 +253,13 @@ if __name__ == '__main__':
 
     num_tests = 10
     Klassifier = GradientBoostingClassifier
+    acc = []
+    pre = []
+    rec = []
+    tim = []
+
     for index, config_setup in enumerate(gbc_configs):
         print('current config: %s' % (config_setup,))
-        acc = []
-        pre = []
-        rec = []
-        tim = []
         acc_accum = 0
         pre_accum = 0
         rec_accum = 0
@@ -254,8 +287,17 @@ if __name__ == '__main__':
         pre.append(pre_accum / num_tests)
         rec.append(rec_accum / num_tests)
         tim.append(tim_accum / num_tests)
+        print('a: %.4f (percent correctly classified)' % (acc_accum / num_tests,))
+        print('p: %.4f (percent of correct positives)' % (pre_accum / num_tests,))
+        print('r: %.4f (percent of positive results found)' % (rec_accum / num_tests,))
+        print('t: %.4f sec' % (tim_accum / num_tests,))
+        
     print(Klassifier)
-    print('a: %.4f (percent correctly classified)' % (sum(acc)/len(acc),))
-    print('p: %.4f (percent of correct positives)' % (sum(pre)/len(pre),))
-    print('r: %.4f (percent of positive results found)' % (sum(rec)/len(rec),))
-    print('t: %.1f sec' % (sum(tim) / len(tim)))
+    print('a: %.4f (avg percent correctly classified)' % (sum(acc)/len(acc),))
+    acc_index = acc.index(max(acc))
+    print('   %.4f (max) %s' % (max(acc), gbc_configs[acc_index],))
+    print('p: %.4f (avg percent of correct positives)' % (sum(pre)/len(pre),))
+    print('r: %.4f (avg percent of positive results found)' % (sum(rec)/len(rec),))
+    print('t: %.4f avg sec' % (sum(tim) / len(tim)))
+    tim_index = tim.index(min(tim))
+    print('   %.4f (min) %s' % (min(tim), gbc_configs[tim_index],))
