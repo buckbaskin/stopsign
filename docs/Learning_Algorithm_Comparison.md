@@ -102,6 +102,20 @@ This classifier also achieved the maximum accuracy.
 
 The decision tree classifier achieves passing accuracy and very low prediction latency.
 
+## Round 2: Results
+
+The two fastest classifiers were Decision Trees and Stochastic Gradient Descent. 
+Both classifiers achieved prediction latency of less than 0.018 sec in multiple configurations.
+SGD achieved this performance with 77%, 74%, 73%, 64% accuracy.
+Decision Trees achieved this performance with 78% correctly classified (all `max_depth=2` options).
+
+The SGD classifier accuracy appears more tuneable.
+The average accuracy was 66%, but the highest accuracy was more than 10% better. 
+The average prediction latency was 0.0183 and the fastest prediction latency was 0.0176, so the prediction latency is largely invariant to the parameter changes.
+
+The Decision Tree classifier accuracy was largely invariant to configuration changes.
+It may be investigated later.
+
 ## Further Considerations
 
 For robot saftey, the robot should stop immediately if there is a stopsign visible. With a weaker mandate, the robot shouldn't stop working unless there is a stopsign. In terms of metrics, the robot should aim for high recall for saftey and high precision for allowing continued operation.
