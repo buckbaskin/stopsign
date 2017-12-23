@@ -75,6 +75,31 @@ The overall algorithm seems to meet the requirements.
 It seems that this classifier makes worse latency/accuracy tradeoffs than other classifiers.
 Neural network architecture is an open field of investigation, so future work may be done optimizing the tradeoff boundary.
 
+### `SVC`
+
+The support vector classifier appears to be running very slowly.
+This appears to largely be training time; however, the prediction time is also on the slower end.
+This doesn't bode well for beating the prediction latency of the KNeighborsClassifier.
+As of the current writing, the algorithm takes about 3.5 secs to classify and achieves the bare minimum 69% accuracy.
+
+The prediction latency appears to not meet the requirements (same order of magnitude as K Nearest Neighbors).
+The accuracy may improve on average or with different parameters (current testing was linear SVC).
+
+Insert obligitory quote about beatings continuing until morale improves.
+
+### `DecisionTreeClassifier`
+
+The decision tree classifer looks promising.
+The algorithm averaged 73% accuracy and 0.022 sec prediction latency.
+The most accurate algorithm achieved 78% accuracy with the `gini` criterion, a min_split of 2 and a maximum depth of 2.
+There are a total of 6 algorithms that achieved the maximum score. All achieved this maximum score with a depth of 2.
+There were all possible combinations of the other variables (`gini` v. `entropy`, `min_samples_split`) so it would appear that the only variable with a significant effect was the depth.
+This would indicate that the algorithm would potentially overfit in other cases (extra depth).
+The fastest classifier was responsive in 0.017 sec on average with the `entropy` criterion, a min_split of 8 and a maximum depth of 2.
+This classifier also achieved the maximum accuracy.
+
+The decision tree classifier achieves passing accuracy and very low prediction latency.
+
 ## Further Considerations
 
 For robot saftey, the robot should stop immediately if there is a stopsign visible. With a weaker mandate, the robot shouldn't stop working unless there is a stopsign. In terms of metrics, the robot should aim for high recall for saftey and high precision for allowing continued operation.
