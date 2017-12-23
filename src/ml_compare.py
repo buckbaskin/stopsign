@@ -152,8 +152,8 @@ if __name__ == '__main__':
         # SGDClassifier, 
         # KNeighborsClassifier, # removed due to performance with 500 keypoints (30 sec per predict) 
         # MLPClassifier,
-        SVC,
-        # DecisionTreeClassifier,
+        # SVC,
+        DecisionTreeClassifier,
         ]
 
     gbc_spec = {
@@ -196,8 +196,8 @@ if __name__ == '__main__':
     # Klassifier_configs.append(sgd_spec)
     # Klassifier_configs.append(knn_spec)
     # Klassifier_configs.append(mlp_spec)
-    Klassifier_configs.append(svc_spec)
-    # Klassifier_configs.append(dtc_spec)
+    # Klassifier_configs.append(svc_spec)
+    Klassifier_configs.append(dtc_spec)
 
     num_tests = 10
 
@@ -221,6 +221,7 @@ if __name__ == '__main__':
                 classifier.fit(train_X, train_y)
                 # print('end fitting')
 
+                # TODO(buckbaskin): rewrite to split into sets of 500 kp
                 # print('begin pred')
                 stime = datetime.datetime.now()
                 y_pred = classifier.predict(test_X)

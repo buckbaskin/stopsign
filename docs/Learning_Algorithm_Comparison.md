@@ -81,9 +81,11 @@ The support vector classifier appears to be running very slowly.
 This appears to largely be training time; however, the prediction time is also on the slower end.
 This doesn't bode well for beating the prediction latency of the KNeighborsClassifier.
 As of the current writing, the algorithm takes about 3.5 secs to classify and achieves the bare minimum 69% accuracy.
+The maximum accuracy was 75% achieved with a polynomial kernel.
+The average accuracy was below 40%, and the fastest classification was just over 3 seconds.
 
 The prediction latency appears to not meet the requirements (same order of magnitude as K Nearest Neighbors).
-The accuracy may improve on average or with different parameters (current testing was linear SVC).
+The accuracy may improve on average or with different polynomial parameters but the prediction latency is a deal breaker for now.
 
 Insert obligitory quote about beatings continuing until morale improves.
 
