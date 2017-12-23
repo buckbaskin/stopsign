@@ -10,7 +10,7 @@ from imblearn.under_sampling import RandomUnderSampler
 
 from sklearn.ensemble import GradientBoostingClassifier
 # from sklearn.gaussian_process import GaussianProcessClassifier
-# from sklearn.linear_model import SGDClassifier
+from sklearn.linear_model import SGDClassifier
 from sklearn.metrics import accuracy_score, precision_score, recall_score
 # from sklearn.neighbors import KNeighborsClassifier
 # from sklearn.neural_network import MLPClassifier
@@ -116,9 +116,9 @@ if __name__ == '__main__':
     train_X, train_y, test_X, test_y = load_data(12345)
 
     Klassifiers = [
-        GradientBoostingClassifier, 
+        # GradientBoostingClassifier, 
         # GaussianProcessClassifier, # This gave a MemoryError on round 0/6
-        # SGDClassifier, 
+        SGDClassifier, 
         # KNeighborsClassifier, # removed due to performance with 500 keypoints (30 sec per predict) 
         # MLPClassifier,
         # SVC,
@@ -248,56 +248,163 @@ if __name__ == '__main__':
     },
     ]
 
+
+    sgd_configs = [
+    {
+    'loss': 'hinge',
+    'penalty': 'l2',
+    },
+    {
+    'loss': 'hinge',
+    'penalty': 'l1',
+    'max_iter': 1,
+    },
+    {
+    'loss': 'hinge',
+    'penalty': 'l1',
+    'max_iter': 2,
+    },
+    {
+    'loss': 'hinge',
+    'penalty': 'l1',
+    'max_iter': 3,
+    },
+    {
+    'loss': 'hinge',
+    'penalty': 'l1',
+    'max_iter': 4,
+    },
+    {
+    'loss': 'hinge',
+    'penalty': 'l1',
+    'max_iter': 5,
+    },
+    {
+    'loss': 'hinge',
+    'penalty': 'l1',
+    'max_iter': 10,
+    },
+    {
+    'loss': 'hinge',
+    'penalty': 'l1',
+    'max_iter': 25,
+    },
+    {
+    'loss': 'hinge',
+    'penalty': 'l1',
+    'max_iter': 50,
+    },
+    {
+    'loss': 'hinge',
+    'penalty': 'l1',
+    'max_iter': 125,
+    },
+    {
+    'loss': 'hinge',
+    'penalty': 'l1',
+    'max_iter': 250,
+    },
+    {
+    'loss': 'hinge',
+    'penalty': 'l1',
+    'max_iter': 500
+    },
+    {
+    'loss': 'hinge',
+    'penalty': 'l1',
+    'max_iter': 500
+    },
+    {
+    'loss': 'hinge',
+    'penalty': 'l1',
+    'max_iter': 1000
+    },
+    {
+    'loss': 'hinge',
+    'penalty': 'l1',
+    'max_iter': 2000
+    },
+    {
+    'loss': 'hinge',
+    'penalty': 'elasticnet',
+    },
+    {
+    'loss': 'log',
+    'penalty': 'l2',
+    },
+    {
+    'loss': 'log',
+    'penalty': 'l1',
+    },
+    {
+    'loss': 'log',
+    'penalty': 'elasticnet',
+    },
+    {
+    'loss': 'modified_huber',
+    'penalty': 'l2',
+    },
+    {
+    'loss': 'modified_huber',
+    'penalty': 'l1',
+    },
+    {
+    'loss': 'modified_huber',
+    'penalty': 'elasticnet',
+    },
+    ]
     Klassifier_configs = []
-    Klassifier_configs.append(gbc_configs)
+    # Klassifier_configs.append(gbc_configs)
+    Klassifier_configs.append(sgd_configs)
 
     num_tests = 10
-    Klassifier = GradientBoostingClassifier
-    acc = []
-    pre = []
-    rec = []
-    tim = []
 
-    for index, config_setup in enumerate(gbc_configs):
-        print('current config: %s' % (config_setup,))
-        acc_accum = 0
-        pre_accum = 0
-        rec_accum = 0
-        tim_accum = 0
-        for seed in range(0, num_tests):
-            print('round %4d/%4d' % (seed+1, num_tests))
-            train_X, train_y = subsample_data(train_X, train_y, 0.5, seed+9001)
-            # print('begin fitting')
-            classifier = Klassifier(**config_setup)
-            classifier.fit(train_X, train_y)
-            # print('end fitting')
+    for index, Klassifier in enumerate(Klassifiers):
+        acc = []
+        pre = []
+        rec = []
+        tim = []
 
-            # print('begin pred')
-            stime = datetime.datetime.now()
-            y_pred = classifier.predict(test_X)
-            etime = datetime.datetime.now()
-            # print('end pred')
-            # print('begin scoring')
-            acc_accum += accuracy_score(y_true=test_y, y_pred=y_pred)
-            pre_accum += precision_score(y_true=test_y, y_pred=y_pred)
-            rec_accum += recall_score(y_true=test_y, y_pred=y_pred)
-            tim_accum += (etime - stime).total_seconds()
-            # print('end scoring')
-        acc.append(acc_accum / num_tests)
-        pre.append(pre_accum / num_tests)
-        rec.append(rec_accum / num_tests)
-        tim.append(tim_accum / num_tests)
-        print('a: %.4f (percent correctly classified)' % (acc_accum / num_tests,))
-        print('p: %.4f (percent of correct positives)' % (pre_accum / num_tests,))
-        print('r: %.4f (percent of positive results found)' % (rec_accum / num_tests,))
-        print('t: %.4f sec' % (tim_accum / num_tests,))
-        
-    print(Klassifier)
-    print('a: %.4f (avg percent correctly classified)' % (sum(acc)/len(acc),))
-    acc_index = acc.index(max(acc))
-    print('   %.4f (max) %s' % (max(acc), gbc_configs[acc_index],))
-    print('p: %.4f (avg percent of correct positives)' % (sum(pre)/len(pre),))
-    print('r: %.4f (avg percent of positive results found)' % (sum(rec)/len(rec),))
-    print('t: %.4f avg sec' % (sum(tim) / len(tim)))
-    tim_index = tim.index(min(tim))
-    print('   %.4f (min) %s' % (min(tim), gbc_configs[tim_index],))
+        for config_setup in Klassifier_configs[index]:
+            print('current config: %s' % (config_setup,))
+            acc_accum = 0
+            pre_accum = 0
+            rec_accum = 0
+            tim_accum = 0
+            for seed in range(0, num_tests):
+                # print('round %4d/%4d' % (seed+1, num_tests))
+                train_X, train_y = subsample_data(train_X, train_y, 0.5, seed+9002)
+                # print('begin fitting')
+                classifier = Klassifier(**config_setup)
+                classifier.fit(train_X, train_y)
+                # print('end fitting')
+
+                # print('begin pred')
+                stime = datetime.datetime.now()
+                y_pred = classifier.predict(test_X)
+                etime = datetime.datetime.now()
+                # print('end pred')
+                # print('begin scoring')
+                acc_accum += accuracy_score(y_true=test_y, y_pred=y_pred)
+                pre_accum += precision_score(y_true=test_y, y_pred=y_pred)
+                rec_accum += recall_score(y_true=test_y, y_pred=y_pred)
+                tim_accum += (etime - stime).total_seconds()
+                # print('end scoring')
+            acc.append(acc_accum / num_tests)
+            pre.append(pre_accum / num_tests)
+            rec.append(rec_accum / num_tests)
+            tim.append(tim_accum / num_tests)
+            print('a: %.4f (percent correctly classified)' % (acc_accum / num_tests,))
+            print('p: %.4f (percent of correct positives)' % (pre_accum / num_tests,))
+            print('r: %.4f (percent of positive results found)' % (rec_accum / num_tests,))
+            print('t: %.4f sec' % (tim_accum / num_tests,))
+            
+        print(Klassifier)
+        print('a: %.4f (avg percent correctly classified)' % (sum(acc)/len(acc),))
+        acc_index = acc.index(max(acc))
+        print('   %.4f (max) %s' % (max(acc), Klassifier_configs[index][acc_index],))
+        print('p: %.4f (avg percent of correct positives)' % (sum(pre)/len(pre),))
+        print('r: %.4f (avg percent of positive results found)' % (sum(rec)/len(rec),))
+        print('t: %.4f avg sec' % (sum(tim) / len(tim)))
+        tim_index = tim.index(min(tim))
+        print('   %.4f (min) %s' % (min(tim), Klassifier_configs[index][tim_index],))
