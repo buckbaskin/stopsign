@@ -174,7 +174,7 @@ if __name__ == '__main__':
             tim_accum = 0
             for seed in range(0, num_tests):
                 # print('round %4d/%4d' % (seed+1, num_tests))
-                train_X, train_y = subsample_data(train_X, train_y, 0.5, seed+9004)
+                train_X, train_y = subsample_data(train_X, train_y, 0.5, seed+9105)
                 
                 classifier = Klassifier(**config_setup)
                 classifier.fit(train_X, train_y)

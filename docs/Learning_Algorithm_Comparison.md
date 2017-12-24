@@ -116,6 +116,15 @@ The SGD classifier accuracy appears more tuneable.
 The average accuracy was 66%, but the highest accuracy was more than 10% better. 
 The average prediction latency was 0.0183 and the fastest prediction latency was 0.0176, so the prediction latency is largely invariant to the parameter changes.
 
+## Round 2: Optimizing SGD
+
+With multiple different seed prefixes, the SGD is run across the same set of configurations. 
+The algorithms that are within 10% of the most accurate algorithm (about 10) are listed.
+The top 10 fastest algorithms are listed, although most all of the algorithms predict at essentially the same latency (less than 0.0002 sec when predicting about 500 keypoints at a time). If each list is stable, the analysis will continue with the most promising options (potentially the top 5 or so algorithms that rank well at any seed). If the accuracy list isn't stable, further averaging tests will be run to attempt to find configuration options that generalize better regardless of seed.
+
+With a stable list, exhaustive search of potential configuration options will be performed to select the optimal algorithm.
+A new demo video will demonstrate the effectiveness of the new algorithm.
+
 ## Further Considerations
 
 For robot saftey, the robot should stop immediately if there is a stopsign visible. With a weaker mandate, the robot shouldn't stop working unless there is a stopsign. In terms of metrics, the robot should aim for high recall for saftey and high precision for allowing continued operation.
