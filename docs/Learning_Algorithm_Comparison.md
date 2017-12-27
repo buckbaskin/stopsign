@@ -146,7 +146,7 @@ The default behavior is to make the metric 0, so the average recall is very low.
 
 ## Round 2: Results
 
-The resulting classification can be visualized with the demo video linked here. Coming Soon!
+The resulting classification can be visualized with the demo video. [Demo!](https://youtu.be/ZV9dfaegjz0)
 
 ## Further Considerations
 
