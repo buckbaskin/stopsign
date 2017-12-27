@@ -116,7 +116,9 @@ The SGD classifier accuracy appears more tuneable.
 The average accuracy was 66%, but the highest accuracy was more than 10% better. 
 The average prediction latency was 0.0183 and the fastest prediction latency was 0.0176, so the prediction latency is largely invariant to the parameter changes.
 
-## Round 2: Optimizing SGD
+## Round 2: Optimization 
+
+### SGDClassifier
 
 With multiple different seed prefixes, the SGD is run across the same set of configurations. 
 The algorithms that are within 10% of the most accurate algorithm (about 10) are listed.
@@ -124,9 +126,13 @@ The top 10 fastest algorithms are listed, although most all of the algorithms pr
 
 After increasing the number of iterations and seeds to 256 per configuration, the SGD performance tuning flatlined and settled to an average of mid to low 60% accuracy.
 The horizontal axis is the `max_iter` parameter for the `scikit-learn` [`SGDClassifier` constructor](http://scikit-learn.org/stable/modules/generated/sklearn.linear_model.SGDClassifier.html#sklearn.linear_model.SGDClassifier).
-![Alt Text](/img/sgd_opt/256iters_hinge.png?raw=true "Optional Title")
 This indicates that performance gains are dependent on seed and likely don't generalize well.
 Based on this data, the decision tree route was investigated.
+![Alt Text](https://raw.githubusercontent.com/buckbaskin/stopsign/master/img/sgd_opt/256iters_hinge.png?raw=true "Interesting Alt Text")
+
+### DecisionTreeClassifier
+
+Coming Soon!
 
 ### Note during optimization
 
