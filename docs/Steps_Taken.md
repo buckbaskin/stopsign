@@ -33,6 +33,8 @@ A keypoint descriptor classifier was trained based on the manual labeling and sa
 
 ## Creating the Demo
 
-Each image from the original video was loaded and classified offline. Each set of images was stitched together using ffmpeg to make demo videos based on each set of images (original, gaussian noise and labelled demo). During the running of the demo, the performance of the algorithm was shown to be entirely inadequate. Using the `scikit-learn` implementation to predict an entire image at once took more than 30 seconds per image in an application where the snowplow might need to check 30 images per second.
+Each image from the original video was loaded and classified offline (the performance is now suitable for online). Each set of images was stitched together using ffmpeg to make demo videos based on each set of images (original, gaussian noise and labelled demo). ~~During the running of the demo, the performance of the algorithm was shown to be entirely inadequate. Using the `scikit-learn` implementation to predict an entire image at once took more than 30 seconds per image in an application where the snowplow might need to check 30 images per second.~~ The new performance exceeds the prediction latency requirement on the test machine.
 
-The demo video can be found [here](https://github.com/buckbaskin/stopsign/releases/tag/v0.3-alpha).
+~~The demo video can be found [here](https://github.com/buckbaskin/stopsign/releases/tag/v0.3-alpha).~~
+
+The new demo video can be found [here](https://github.com/buckbaskin/stopsign/releases/tag/v0.4-alpha).
