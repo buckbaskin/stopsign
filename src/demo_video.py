@@ -21,12 +21,12 @@ from sklearn.tree import DecisionTreeClassifier
 rospack = rospkg.RosPack()
 pkg_path = rospack.get_path('stopsign')
 
-KLASSIFIER_PATH = '%s/data/005_image_labels/kp_classifier.pkl' % (pkg_path,)
+KLASSIFIER_PATH = '%s/data/009_dtc_opt/dtc_classifier.pkl' % (pkg_path,)
 
 IMAGE_BASE_STRING = '%s/data/002_original_images/%s' % (pkg_path, 'frame%04d.jpg',)
-OUT_BASE_STRING = '%s/data/007_demo_images/%s' % (pkg_path, 'frame%04d.jpg',)
+OUT_BASE_STRING = '%s/data/010_demo_images/%s' % (pkg_path, 'frame%04d.jpg',)
 
-start_image_id = 1700
+start_image_id = 0
 end_image_id = 2189
 
 def get_image(image_id):
@@ -44,7 +44,7 @@ def colorize_image(img, kp_classifier):
     print('begin predict')
     classes = kp_classifier.predict(des)
     # show how long the classification takes
-    print('end predict. %.1f sec' % ((datetime.datetime.now() - start_time).total_seconds()))
+    print('end predict. %.5f sec' % ((datetime.datetime.now() - start_time).total_seconds()))
 
     # rebuild list of keypoints that classify as a stopsign
     short_kp = []
