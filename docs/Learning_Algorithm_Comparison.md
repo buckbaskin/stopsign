@@ -132,7 +132,9 @@ Based on this data, the decision tree route was investigated.
 
 ### DecisionTreeClassifier
 
-Coming Soon!
+The important seed to vary for the DecisionTreeClassifier is the load_data seed.
+This has resulted in quite the variance in low depth classifications.
+For both options (`gini` and `entropy`) a depth of about 15 stabilizes the results. 
 
 ### Note during optimization
 
