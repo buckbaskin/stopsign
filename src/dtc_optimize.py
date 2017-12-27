@@ -31,7 +31,7 @@ BULK_DATA_FILE = '%s/data/003_manual_labels/all.csv' % (pkg_path,)
 start_image_id = 0
 end_image_id = 2189
 
-SAVE_IMAGE_FILE = '%s/data/009_dtc_opt/%s' % (pkg_path, 'depth_%03dtest_entropy3.png')
+SAVE_IMAGE_FILE = '%s/data/009_dtc_opt/%s' % (pkg_path, 'depth_%03dtest_gini_avg.png')
 
 descriptors = []
 for i in range(32):
@@ -39,7 +39,7 @@ for i in range(32):
 
 klass = ['class'.ljust(7)]
 
-def load_data(seed=None):
+def load_data():
     df = pd.read_csv(BULK_DATA_FILE, header=0)
     # mutate data back from stored form
     df['class  '] = df['class  '].apply(lambda cls: cls / 1000.0)
@@ -53,11 +53,14 @@ def load_data(seed=None):
     print(X.describe())
     print('y.describe()')
     print(y.describe())
+    return X, y
+
+def scramble_data(X, y, seed=None):
 
     # use mask to split into test, train
     if seed is not None:
         np.random.seed(seed)
-    msk = np.random.rand(len(df)) < 0.8
+    msk = np.random.rand(len(X)) < 0.8
     train_X = X[msk].as_matrix()
     test_X = X[~msk].as_matrix()
     train_y = y[msk].as_matrix().ravel()
@@ -134,25 +137,27 @@ if __name__ == '__main__':
     '''
 
     # load data from csv, split into training and test sets
-    print('begin loading data')
-    train_X, train_y, test_X, test_y = load_data(1234567)
+    # print('begin loading data')
+    #train_X, train_y, test_X, test_y = load_data(1234567)
 
     Klassifiers = [
         DecisionTreeClassifier, 
     ]
 
-    max_iters = list(range(1,30))
+    max_iters = list(range(1, 20))
     sgd_spec = {
-        'criterion': ['entropy',], # ['gini', 'entropy',],
+        'criterion': ['gini',], # ['gini', 'entropy',],
         'max_depth': max_iters,
     }
 
     Klassifier_configs = []
     Klassifier_configs.extend(make_all_combinations(sgd_spec))
 
+    bigX, bigy = load_data()
+
     num_tests = 8
-    for i in range(3,4):
-        num_tests = 2**i
+    for i in range(8,9):
+        num_tests = i
 
         for index, Klassifier in enumerate(Klassifiers):
             acc = []
@@ -167,7 +172,8 @@ if __name__ == '__main__':
                 rec_accum = 0
                 tim_accum = 0
                 for seed in range(0, num_tests):
-                    # print('round %4d/%4d' % (seed+1, num_tests))
+                    print('round %4d/%4d' % (seed+1, num_tests))
+                    train_X, train_y, test_X, test_y = scramble_data(bigX, bigy, seed + 1234567)
                     train_X, train_y = subsample_data(train_X, train_y, 0.5, seed*num_tests+9105)
                     
                     classifier = Klassifier(**config_setup)
