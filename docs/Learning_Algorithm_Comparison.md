@@ -122,8 +122,11 @@ With multiple different seed prefixes, the SGD is run across the same set of con
 The algorithms that are within 10% of the most accurate algorithm (about 10) are listed.
 The top 10 fastest algorithms are listed, although most all of the algorithms predict at essentially the same latency (less than 0.0002 sec when predicting about 500 keypoints at a time). If each list is stable, the analysis will continue with the most promising options (potentially the top 5 or so algorithms that rank well at any seed). If the accuracy list isn't stable, further averaging tests will be run to attempt to find configuration options that generalize better regardless of seed.
 
-With a stable list, exhaustive search of potential configuration options will be performed to select the optimal algorithm.
-A new demo video will demonstrate the effectiveness of the new algorithm.
+After increasing the number of iterations and seeds to 256 per configuration, the SGD performance tuning flatlined and settled to an average of mid to low 60% accuracy.
+The horizontal axis is the `max_iteration` parameter for the `scikit-learn` SGD constructor.
+![Alt Text](/img/sgd_opt/256iters_hinge.png?raw=true "Optional Title")
+This indicates that performance gains are dependent on seed and likely don't generalize well.
+Based on this data, the decision tree route was investigated.
 
 ### Note during optimization
 

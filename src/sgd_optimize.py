@@ -39,7 +39,7 @@ end_image_id = 2189
 
 IMAGE_BASE_STRING = '%s/data/002_original_images/%s' % (pkg_path, 'frame%04d.jpg')
 
-SAVE_IMAGE_FILE = '%s/data/008_sgd_opt/%s' % (pkg_path, 'iters_%03dtest_log.png')
+SAVE_IMAGE_FILE = '%s/data/008_sgd_opt/%s' % (pkg_path, 'iters_%03dtest_huber.png')
 
 descriptors = []
 for i in range(32):
