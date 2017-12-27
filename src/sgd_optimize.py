@@ -17,7 +17,9 @@ from sklearn.neural_network import MLPClassifier
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 
-# from matplotlib import pyplot as plt
+import matplotlib
+matplotlib.use('TKAgg')
+from matplotlib import pyplot as plt
 
 # class  ,descr00,descr01,descr02,descr03,descr04,descr05,descr06,descr07,
 # descr08,descr09,descr10,descr11,descr12,descr13,descr14,descr15,descr16,
@@ -36,6 +38,8 @@ start_image_id = 0
 end_image_id = 2189
 
 IMAGE_BASE_STRING = '%s/data/002_original_images/%s' % (pkg_path, 'frame%04d.jpg')
+
+SAVE_IMAGE_FILE = '%s/data/008_sgd_opt/%s' % (pkg_path, 'iters_%03dtest_log.png')
 
 descriptors = []
 for i in range(32):
@@ -149,79 +153,94 @@ if __name__ == '__main__':
         SGDClassifier, 
     ]
 
+    max_iters = list(range(1,201,5))
     sgd_spec = {
-        'loss': ['hinge', 'log', 'modified_huber',],
-        'penalty': ['l2', 'l1', 'elasticnet',],
-        'max_iter': [1, 5, 10, 25, 50, 100, 250, 500, 1000, 2000,],
+        'loss': ['modified_huber',], # ['hinge', 'log', 'modified_huber',],
+        'penalty': ['l1',], # ['l2', 'l1', 'elasticnet',],
+        'max_iter': max_iters,
     }
 
     Klassifier_configs = []
     Klassifier_configs.extend(make_all_combinations(sgd_spec))
 
-    num_tests = 10
+    num_tests = 8
+    for i in range(8,9):
+        num_tests = 2**i
 
-    for index, Klassifier in enumerate(Klassifiers):
-        acc = []
-        pre = []
-        rec = []
-        tim = []
+        for index, Klassifier in enumerate(Klassifiers):
+            acc = []
+            pre = []
+            rec = []
+            tim = []
 
-        for config_setup in Klassifier_configs:
-            print('current config: %s' % (config_setup,))
-            acc_accum = 0
-            pre_accum = 0
-            rec_accum = 0
-            tim_accum = 0
-            for seed in range(0, num_tests):
-                # print('round %4d/%4d' % (seed+1, num_tests))
-                train_X, train_y = subsample_data(train_X, train_y, 0.5, seed+9105)
-                
-                classifier = Klassifier(**config_setup)
-                classifier.fit(train_X, train_y)
-                
-                X_splits = np.array_split(test_X, 437)
-                y_splits = np.array_split(test_y, 437)
+            for config_setup in Klassifier_configs:
+                print('current config: %s' % (config_setup,))
+                acc_accum = 0
+                pre_accum = 0
+                rec_accum = 0
+                tim_accum = 0
+                for seed in range(0, num_tests):
+                    # print('round %4d/%4d' % (seed+1, num_tests))
+                    train_X, train_y = subsample_data(train_X, train_y, 0.5, seed*num_tests+9105)
+                    
+                    classifier = Klassifier(**config_setup)
+                    classifier.fit(train_X, train_y)
+                    
+                    X_splits = np.array_split(test_X, 437)
+                    y_splits = np.array_split(test_y, 437)
 
-                split_version = zip(X_splits, y_splits)
-                for test_X_sub, test_y_sub in split_version:
-                    # print('begin pred')
-                    stime = datetime.datetime.now()
-                    y_pred = classifier.predict(test_X_sub)
-                    etime = datetime.datetime.now()
-                    # print('end pred')
-                    # print('begin scoring')
-                    acc_accum += accuracy_score(y_true=test_y_sub, y_pred=y_pred)
-                    pre_accum += precision_score(y_true=test_y_sub, y_pred=y_pred)
-                    rec_accum += recall_score(y_true=test_y_sub, y_pred=y_pred)
-                    tim_accum += (etime - stime).total_seconds()
-                # print('end scoring')
-            acc.append(acc_accum / (num_tests*437))
-            pre.append(pre_accum / (num_tests*437))
-            rec.append(rec_accum / (num_tests*437))
-            tim.append(tim_accum / (num_tests*437))
-            print('a: %.4f (percent correctly classified)' % (acc_accum / (num_tests*437),))
-            print('p: %.4f (percent of correct positives)' % (pre_accum / (num_tests*437),))
-            print('r: %.4f (percent of positive results found)' % (rec_accum / (num_tests*437),))
-            print('t: %.6f sec' % (tim_accum / (num_tests*437),))       
+                    split_version = zip(X_splits, y_splits)
+                    for test_X_sub, test_y_sub in split_version:
+                        # print('begin pred')
+                        stime = datetime.datetime.now()
+                        y_pred = classifier.predict(test_X_sub)
+                        etime = datetime.datetime.now()
+                        # print('end pred')
+                        # print('begin scoring')
+                        acc_accum += accuracy_score(y_true=test_y_sub, y_pred=y_pred)
+                        pre_accum += precision_score(y_true=test_y_sub, y_pred=y_pred)
+                        rec_accum += recall_score(y_true=test_y_sub, y_pred=y_pred)
+                        tim_accum += (etime - stime).total_seconds()
+                    # print('end scoring')
+                acc.append(acc_accum / (num_tests*437))
+                pre.append(pre_accum / (num_tests*437))
+                rec.append(rec_accum / (num_tests*437))
+                tim.append(tim_accum / (num_tests*437))
+                print('a: %.4f (percent correctly classified)' % (acc_accum / (num_tests*437),))
+                print('p: %.4f (percent of correct positives)' % (pre_accum / (num_tests*437),))
+                print('r: %.4f (percent of positive results found)' % (rec_accum / (num_tests*437),))
+                print('t: %.6f sec' % (tim_accum / (num_tests*437),))       
 
-        print(Klassifier)
-        print('Averaged over %d tests' % (num_tests,))
-        # better accuracy summary
-        print('a: %.4f (avg percent correctly classified)' % (sum(acc)/len(acc),))
-        print('Top Accuracies')
-        print('90 percent of max accuracy cutoff')
-        sorted_ = sorted(enumerate(acc), key=lambda x: -x[1])
-        top_acc = sorted_[0][1]
-        sorted_ = filter(lambda x: x[1] >= top_acc * 0.9, sorted_)
-        for acc_index, accuracy in sorted_[:15]:
-            print('% 4.2f | %s' % (accuracy * 100, Klassifier_configs[acc_index]))
+            print(Klassifier)
+            print('Averaged over %d tests' % (num_tests,))
+            # better accuracy summary
+            print('a: %.4f (avg percent correctly classified)' % (sum(acc)/len(acc),))
+            print('Top Accuracies')
+            print('90 percent of max accuracy cutoff')
+            sorted_ = sorted(enumerate(acc), key=lambda x: -x[1])
+            top_acc = sorted_[0][1]
+            sorted_ = filter(lambda x: x[1] >= top_acc * 0.9, sorted_)
+            for acc_index, accuracy in sorted_[:15]:
+                print('% 4.2f | %s' % (accuracy * 100, Klassifier_configs[acc_index]))
 
-        print('p: %.4f (avg percent of correct positives)' % (sum(pre)/len(pre),))
-        print('r: %.4f (avg percent of positive results found)' % (sum(rec)/len(rec),))
+            print('p: %.4f (avg percent of correct positives)' % (sum(pre)/len(pre),))
+            print('r: %.4f (avg percent of positive results found)' % (sum(rec)/len(rec),))
 
-        print('t: %.6f avg sec' % (sum(tim) / len(tim)))
-        print('Top Prediction Latencies')
-        print('Top 10')
-        sorted_ = sorted(enumerate(tim), key=lambda x: x[1])
-        for tim_index, pred_latency in sorted_[:10]:
-            print('%.6f | %s' % (pred_latency, Klassifier_configs[tim_index]))
+            print('t: %.6f avg sec' % (sum(tim) / len(tim)))
+            print('Top Prediction Latencies')
+            print('Top 10')
+            sorted_ = sorted(enumerate(tim), key=lambda x: x[1])
+            for tim_index, pred_latency in sorted_[:10]:
+                print('%.6f | %s' % (pred_latency, Klassifier_configs[tim_index]))
+
+            print(num_tests)
+            print(max_iters)
+            print(acc)
+            plt.plot(max_iters, acc, label=str(num_tests))
+            plt.axis([min(max_iters) - 1, max(max_iters) + 1, 0, 1.0])
+            plt.xlabel('Iterations')
+            plt.ylabel('Accuracy')
+            plt.savefig(SAVE_IMAGE_FILE % (num_tests,))
+            # plt.show()
+            plt.clf()
+            print('did it save?')

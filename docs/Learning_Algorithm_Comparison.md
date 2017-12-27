@@ -125,6 +125,12 @@ The top 10 fastest algorithms are listed, although most all of the algorithms pr
 With a stable list, exhaustive search of potential configuration options will be performed to select the optimal algorithm.
 A new demo video will demonstrate the effectiveness of the new algorithm.
 
+### Note during optimization
+
+The average recall is very low because many splits of 500 elements have no positive (stopsign) class examples.
+This is representative where the image doesn't have a stopsign and is very common in the test data.
+The default behavior is to make the metric 0, so the average recall is very low.
+
 ## Further Considerations
 
 For robot saftey, the robot should stop immediately if there is a stopsign visible. With a weaker mandate, the robot shouldn't stop working unless there is a stopsign. In terms of metrics, the robot should aim for high recall for saftey and high precision for allowing continued operation.
