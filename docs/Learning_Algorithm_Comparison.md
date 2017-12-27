@@ -134,7 +134,9 @@ Based on this data, the decision tree route was investigated.
 
 The important seed to vary for the DecisionTreeClassifier is the load_data seed.
 This has resulted in quite the variance in low depth classifications.
-For both options (`gini` and `entropy`) a depth of about 15 stabilizes the results. 
+For both options (`gini` and `entropy`) a depth of about 15 stabilizes the results at about 70% accuracy.
+Moving forward, the default option (`gini`) will be used with a max_depth of 15.
+![Alt Text](https://raw.githubusercontent.com/buckbaskin/stopsign/master/img/dtc_opt/gini_008_avg.png?raw=true "Interesting Alt Text")
 
 ### Note during optimization
 

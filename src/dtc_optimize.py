@@ -3,6 +3,7 @@ import rospkg
 
 import cv2
 import datetime
+import joblib
 import numpy as np
 import pandas as pd
 
@@ -32,6 +33,7 @@ start_image_id = 0
 end_image_id = 2189
 
 SAVE_IMAGE_FILE = '%s/data/009_dtc_opt/%s' % (pkg_path, 'depth_%03dtest_gini_avg.png')
+DTC_MODEL_STORE_FILE = '%s/data/009_dtc_opt/dtc_classifier.pkl' % (pkg_path,)
 
 descriptors = []
 for i in range(32):
@@ -144,9 +146,9 @@ if __name__ == '__main__':
         DecisionTreeClassifier, 
     ]
 
-    max_iters = list(range(1, 20))
+    max_iters = list(range(15,16))
     sgd_spec = {
-        'criterion': ['gini',], # ['gini', 'entropy',],
+        'criterion': ['gini', 'entropy'], # ['gini', 'entropy',],
         'max_depth': max_iters,
     }
 
@@ -226,14 +228,23 @@ if __name__ == '__main__':
             for tim_index, pred_latency in sorted_[:10]:
                 print('%.6f | %s' % (pred_latency, Klassifier_configs[tim_index]))
 
-            print(num_tests)
-            print(max_iters)
-            print(acc)
-            plt.plot(max_iters, acc, label=str(num_tests))
-            plt.axis([min(max_iters) - 1, max(max_iters) + 1, 0, 1.0])
-            plt.xlabel('Max Depth')
-            plt.ylabel('Accuracy')
-            plt.savefig(SAVE_IMAGE_FILE % (num_tests,))
+            # print(num_tests)
+            # print(max_iters)
+            # print(acc)
+            # plt.plot(max_iters, acc, label=str(num_tests))
+            # plt.axis([min(max_iters) - 1, max(max_iters) + 1, 0, 1.0])
+            # plt.xlabel('Max Depth')
+            # plt.ylabel('Accuracy')
+            # plt.savefig(SAVE_IMAGE_FILE % (num_tests,))
             # plt.show()
-            plt.clf()
-            print('did it save?')
+            # plt.clf()
+            # print('did it save?')
+
+    # train and save new classifier based on optimization
+    print('save classifier trained on all data')
+    classifier = DecisionTreeClassifier(max_depth=15)
+    bigX, bigy = load_data()
+    print('big classification')
+    classifier.fit(bigX, bigy)
+    print('save classifier')
+    joblib.dump(classifier, DTC_MODEL_STORE_FILE)
