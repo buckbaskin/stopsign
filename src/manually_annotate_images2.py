@@ -213,11 +213,11 @@ print('Done Prefilling Data')
 
 random.seed(12345678)
 
-# label 10 random images from the dataset
+# label 100 random images from the dataset
 # TODO(buckbaskin) explore changing kp parameters because stopsigns showing w/o 
 # keypoints even on large stopsigns
 
-for _ in range(10):
+for _ in range(100):
     video_id = random.randrange(start_video_id, end_video_id)
     image_id = random.randrange(start_image_id, end_image_id)
     img = get_image(video_id, image_id)
