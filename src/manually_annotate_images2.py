@@ -159,24 +159,6 @@ def hand_label_image(img):
     maxy = 10000
     return results, test_kp
 
-def auto_label_image(image_id, klass):
-    results = []
-    img = get_image(image_id)
-    # Initiate STAR detector
-    orb = cv2.ORB()
-
-    # find the keypoints with ORB
-    kp = orb.detect(img,None)
-
-    # compute the descriptors with ORB
-    kp, des = orb.compute(img, kp)
-
-    for index, keypoint in enumerate(kp):
-        descriptor = des[index]
-        vector = kp_des2vector(klass, image_id, kp[index], descriptor)
-        results.append(vector)
-    return results
-
 def extend_file(file, new_vectors):
     for vector in new_vectors:
         file.write(','.join(['%7.2f' % num for num in vector]) + '\n')

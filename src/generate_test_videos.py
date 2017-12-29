@@ -35,7 +35,10 @@ def get_image(video_id, image_id):
     return cv2.imread(filename, cv2.IMREAD_COLOR)
 
 def colorize_image(img, kp_classifier):
-    orb = cv2.ORB()
+    height, width, channels = img.shape
+    area = height*width
+    num_features = int((1000.0 * area)/ (640 * 480))
+    orb = cv2.ORB_create(nfeatures = num_features)
     # find the keypoints with ORB
     kp = orb.detect(img,None)
     # compute the descriptors with ORB
