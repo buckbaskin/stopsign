@@ -80,8 +80,8 @@ def colorize_image(img, kp_classifier):
         outImage=img,
         color=(0,0,255),
         flags=int(cv2.DRAW_MATCHES_FLAGS_DRAW_OVER_OUTIMG))
-    cv2.imshow('preview', img)
-    val = cv2.waitKey(0) % 256
+    # cv2.imshow('preview', img)
+    # val = cv2.waitKey(0) % 256
 
     if len(in_kp) > 1:
         cv2.rectangle(img, top_left, bottom_right, (0, 0, 255), 3)
@@ -105,7 +105,7 @@ if __name__ == '__main__':
     # load data from csv, split into training and test sets
     kp_classifier = joblib.load(KLASSIFIER_PATH)  
     for video_id in range(1, 2):
-        for image_id in range(start_image_id, min(20, end_image_id)):
+        for image_id in range(start_image_id, end_image_id):
             if image_id % 1 == 0:
                 print('%02d %d / %d' % (video_id, image_id, end_image_id,))
             og_img = get_image(video_id, image_id)
