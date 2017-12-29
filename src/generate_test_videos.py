@@ -77,7 +77,7 @@ def set_image(img, video_id, image_id):
 if __name__ == '__main__':
     # load data from csv, split into training and test sets
     kp_classifier = joblib.load(KLASSIFIER_PATH)  
-    for video_id in range(2, 25):  
+    for video_id in range(1, 2):
         for image_id in range(start_image_id, end_image_id):
             if image_id % 1 == 0:
                 print('%02d %d / %d' % (video_id, image_id, end_image_id,))
