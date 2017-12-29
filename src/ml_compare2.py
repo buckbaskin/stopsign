@@ -49,10 +49,9 @@ klass = ['class'.ljust(7)]
 
 def load_data():
     df = pd.read_csv(BULK_DATA_FILE, header=0)
+    # print('df.describe() 1')
+    # print(df.describe())
     # mutate data back from stored form
-    df['class  '] = df['class  '].apply(lambda cls: cls / 1000.0)
-    df['angle  '] = df['angle  '].apply(lambda ang: ang / 1000.0)
-    df['respons'] = df['respons'].apply(lambda res: res / 100000000.0)
 
     # split into class, features
     X = df[descriptors]
@@ -61,6 +60,7 @@ def load_data():
     print(X.describe())
     print('y.describe()')
     print(y.describe())
+
     return X, y
 
 def scramble_data(X, y, seed=None):
@@ -118,7 +118,7 @@ def make_all_combinations(dict_of_arglists):
 if __name__ == '__main__':
 
     Klassifiers = [
-        DecisionTreeClassifier, 
+        DecisionTreeClassifier, # 57-55% accuracy
     ]
 
     max_iters = list(range(2,20))
@@ -132,7 +132,7 @@ if __name__ == '__main__':
 
     bigX, bigy = load_data()
 
-    for num_tests in range(8,9):
+    for num_tests in range(16,17):
 
         for index, Klassifier in enumerate(Klassifiers):
             acc = []
@@ -147,10 +147,10 @@ if __name__ == '__main__':
                 rec_accum = 0
                 tim_accum = 0
                 for seed in range(0, num_tests):
-                    print('round %4d/%4d' % (seed+1, num_tests))
+                    # print('round %4d/%4d' % (seed+1, num_tests))
                     train_X, train_y, test_X, test_y = scramble_data(bigX, bigy, seed + 1234567)
                     train_X, train_y = subsample_data(train_X, train_y, 0.5, seed*num_tests+9105)
-                    
+
                     classifier = Klassifier(**config_setup)
                     classifier.fit(train_X, train_y)
                     
@@ -182,7 +182,7 @@ if __name__ == '__main__':
             print(Klassifier)
             print('Averaged over %d tests' % (num_tests,))
             # better accuracy summary
-            print('a: %.4f (avg percent correctly classified)' % (sum(acc)/len(acc),))
+            print('a: %.4f (avg percent correctly classified)' % (np.mean(acc),))
             print('Top Accuracies')
             print('90 percent of max accuracy cutoff')
             sorted_ = sorted(enumerate(acc), key=lambda x: -x[1])
@@ -191,10 +191,10 @@ if __name__ == '__main__':
             for acc_index, accuracy in sorted_[:15]:
                 print('% 4.2f | %s' % (accuracy * 100, Klassifier_configs[acc_index]))
 
-            print('p: %.4f (avg percent of correct positives)' % (sum(pre)/len(pre),))
-            print('r: %.4f (avg percent of positive results found)' % (sum(rec)/len(rec),))
+            print('p: %.4f (avg percent of correct positives)' % (np.mean(pre),))
+            print('r: %.4f (avg percent of positive results found)' % (np.mean(rec),))
 
-            print('t: %.6f avg sec' % (sum(tim) / len(tim)))
+            print('t: %.6f avg sec' % (np.mean(tim),))
             print('Top Prediction Latencies')
             print('Top 10')
             sorted_ = sorted(enumerate(tim), key=lambda x: x[1])
