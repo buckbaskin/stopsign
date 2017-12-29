@@ -21,7 +21,7 @@ from sklearn.tree import DecisionTreeClassifier
 rospack = rospkg.RosPack()
 pkg_path = rospack.get_path('stopsign')
 
-KLASSIFIER_PATH = '%s/data/009_dtc_opt/dtc_classifier.pkl' % (pkg_path,)
+KLASSIFIER_PATH = '%s/data/013_extra_man_labels/dtc_classifier06.pkl' % (pkg_path,)
 
 IMAGE_BASE_STRING = '%s/data/011_new_tests/%s' % (pkg_path, '%02d/frame%04d.jpg',)
 OUT_BASE_STRING = '%s/data/012_new_tests_out/%s' % (pkg_path, '%02d/frame%04d.jpg',)
@@ -59,10 +59,10 @@ def colorize_image(img, kp_classifier):
         else:
             out_kp.append(kp)
 
-    print('short kp')
-    print(len(in_kp))
-    for index, kp in enumerate(in_kp):
-        print('% 4d x: % 4d y: % 4d' % (index, kp.pt[0], kp.pt[1]))
+    # print('short kp')
+    # print(len(in_kp))
+    # for index, kp in enumerate(in_kp):
+    #     print('% 4d x: % 4d y: % 4d' % (index, kp.pt[0], kp.pt[1]))
 
     top_left = (0,0)
     bottom_right = (img.shape[1], img.shape[0])
