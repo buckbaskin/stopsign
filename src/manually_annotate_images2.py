@@ -83,7 +83,7 @@ def hand_label_image(img):
 
     height, width, channels = img.shape
     area = height*width
-    num_features = int((500.0 * area)/ (640 * 480))
+    num_features = int((1000.0 * area)/ (640 * 480))
 
     # Initiate STAR detector
     orb = cv2.ORB_create(nfeatures = num_features)
@@ -122,8 +122,8 @@ def hand_label_image(img):
             cv2.polylines(imgur, [contour], True, (79*i % 255, 0, 255))
             cv2.imshow('preview', imgur)
             cv2.setMouseCallback('preview', click_and_crop)
-            val = cv2.waitKey(0)
-            if val == 1048691:
+            val = cv2.waitKey(0) % 256
+            if val == ord('s'):
                 break
 
     cv2.destroyAllWindows()
@@ -134,10 +134,14 @@ def hand_label_image(img):
             skip_because_of_radius = cv2.pointPolygonTest(contour, kp[index].pt, False) < 0
 
             if not skip_because_of_radius:
-                img2 = cv2.drawKeypoints(img, [kp[index]], color=(0,255,0), flags=4)
-                if val == 1048691:
+                # img2 = cv2.drawKeypoints(
+                #     image=img,
+                #     kp=[kp[index]],
+                #     color=(0,255,0),
+                #     flags=4)
+                if val == ord('s'):
                     klass = 1
-                elif val ==  1048686:
+                elif val ==  ord('n'):
                     klass = 0
                 else:
                     cv2.destroyAllWindows()
@@ -207,7 +211,7 @@ print('Done Prefilling Data')
 
 # Hand label sampled images and auto fill the rest
 
-random.seed(1234567)
+random.seed(12345678)
 
 # label 10 random images from the dataset
 # TODO(buckbaskin) explore changing kp parameters because stopsigns showing w/o 
@@ -225,6 +229,7 @@ for _ in range(10):
     exact_lines.extend(expand_to_string(new_vectors))
 
 print('Write to EXACT_FILE')
+print(EXACT_FILE)
 with open(EXACT_FILE, 'w') as f:
     for line in exact_lines:
         f.write('%s\n' % (line,))
