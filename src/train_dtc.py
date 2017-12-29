@@ -43,7 +43,7 @@ if __name__ == '__main__':
     classifier = DecisionTreeClassifier(max_depth=15)
     bigX, bigy = load_data()
     print('subsample data')
-    trainX, trainy = subsample_data(bigX, bigy, ratio=0.99)
+    trainX, trainy = subsample_data(bigX, bigy, ratio=0.90)
     print('big classification')
     classifier.fit(trainX, trainy)
     print('save classifier')
