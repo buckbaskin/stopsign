@@ -12,7 +12,7 @@ pkg_path = '/home/buck/ros_ws/src/stopsign'
 
 IMAGE_RATE = 11 # hz
 
-EXACT_FILE = '%s/data/013_extra_man_labels/all.csv' % (pkg_path,)
+EXACT_FILE = '%s/data/013_extra_man_labels/all_200.csv' % (pkg_path,)
 
 start_image_id = 1
 end_image_id = 1093
@@ -21,10 +21,15 @@ start_video_id = 1
 end_video_id = 25
 
 IMAGE_BASE_STRING = '%s/data/011_new_tests/%s' % (pkg_path, '%02d/frame%04d.jpg')
+OUT_BASE_STRING = '%s/data/013_extra_man_labels/200/%s' % (pkg_path, 'frame_%02d_%04d.jpg')
 
 def get_image(video_id, image_id):
     filename = IMAGE_BASE_STRING % (video_id, image_id,)
     return cv2.imread(filename, cv2.IMREAD_COLOR)
+
+def set_image(img, video_id, image_id):
+    filename = OUT_BASE_STRING % (video_id, image_id,)
+    cv2.imwrite(filename, img)
 
 def flatten_kp(kp):
     v = np.array(np.zeros((7,)))
@@ -77,7 +82,7 @@ def kp_des2vector(klass, image_id, kp, des):
     vector[1:33] = des
     return vector
 
-def hand_label_image(img):
+def hand_label_image(img, video_id, image_id):
     global minx, miny, maxx, maxy, contour
     results = []
 
@@ -124,6 +129,7 @@ def hand_label_image(img):
             cv2.setMouseCallback('preview', click_and_crop)
             val = cv2.waitKey(0) % 256
             if val == ord('s'):
+                set_image(imgur, video_id, image_id)
                 break
 
     cv2.destroyAllWindows()
@@ -193,13 +199,13 @@ print('Done Prefilling Data')
 
 # Hand label sampled images and auto fill the rest
 
-random.seed(12345678)
+random.seed(123456789)
 
 # label 100 random images from the dataset
 # TODO(buckbaskin) explore changing kp parameters because stopsigns showing w/o 
 # keypoints even on large stopsigns
 
-for _ in range(100):
+for _ in range(200):
     video_id = random.randrange(start_video_id, end_video_id)
     image_id = random.randrange(start_image_id, end_image_id)
     img = get_image(video_id, image_id)
@@ -207,7 +213,7 @@ for _ in range(100):
         video_id = random.randrange(start_video_id, end_video_id)
         image_id = random.randrange(start_image_id, end_image_id)
         img = get_image(video_id, image_id)
-    new_vectors, is_stopsign = hand_label_image(img)
+    new_vectors, is_stopsign = hand_label_image(img, video_id, image_id)
     exact_lines.extend(expand_to_string(new_vectors))
 
 print('Write to EXACT_FILE')
