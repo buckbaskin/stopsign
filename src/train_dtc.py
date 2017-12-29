@@ -7,8 +7,8 @@ import pandas as pd
 from sklearn.tree import DecisionTreeClassifier
 
 pkg_path = '/home/buck/ros_ws/src/stopsign'
-BULK_DATA_FILE = '%s/data/013_extra_man_labels/clean_100.csv' % (pkg_path,)
-DTC_MODEL_STORE_FILE = '%s/data/013_extra_man_labels/dtc_classifier01.pkl' % (pkg_path,)
+BULK_DATA_FILE = '%s/data/013_extra_man_labels/clean_200.csv' % (pkg_path,)
+DTC_MODEL_STORE_FILE = '%s/data/013_extra_man_labels/dtc_classifier02.pkl' % (pkg_path,)
 
 descriptors = []
 for i in range(32):

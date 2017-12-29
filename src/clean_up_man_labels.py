@@ -6,8 +6,8 @@ pkg_path = '/home/buck/ros_ws/src/stopsign'
 
 IMAGE_RATE = 30 # hz
 
-IN_FILE = '%s/data/013_extra_man_labels/all_100.csv' % (pkg_path,)
-OUT_FILE = '%s/data/013_extra_man_labels/clean_100.csv' % (pkg_path,)
+IN_FILE = '%s/data/013_extra_man_labels/all_200.csv' % (pkg_path,)
+OUT_FILE = '%s/data/013_extra_man_labels/clean_200.csv' % (pkg_path,)
 
 if __name__ == '__main__':
     df = pd.read_csv(IN_FILE, header=0)

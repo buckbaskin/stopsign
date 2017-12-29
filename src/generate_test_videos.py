@@ -51,15 +51,39 @@ def colorize_image(img, kp_classifier):
     print('end predict. %.5f sec' % ((datetime.datetime.now() - start_time).total_seconds()))
 
     # rebuild list of keypoints that classify as a stopsign
-    short_kp = []
+    in_kp = []
+    out_kp = []
     for index, kp in enumerate(kp):
         if classes[index] == 1:
-            short_kp.append(kp)
+            in_kp.append(kp)
+        else:
+            out_kp.append(kp)
+
+    print('short kp')
+    print(len(in_kp))
+    for index, kp in enumerate(in_kp):
+        print('% 4d x: % 4d y: % 4d' % (index, kp.pt[0], kp.pt[1]))
 
     top_left = (0,0)
     bottom_right = (img.shape[1], img.shape[0])
     # if the list of keypoints is longer than 3, make edge red, draw kp
-    if len(short_kp) > 1:
+
+    img = cv2.drawKeypoints(
+        image=img,
+        keypoints=in_kp,
+        outImage=img,
+        color=(100,255,0),
+        flags=int(cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS))
+    img = cv2.drawKeypoints(
+        image=img,
+        keypoints=out_kp,
+        outImage=img,
+        color=(0,0,255),
+        flags=int(cv2.DRAW_MATCHES_FLAGS_DRAW_OVER_OUTIMG))
+    cv2.imshow('preview', img)
+    val = cv2.waitKey(0) % 256
+
+    if len(in_kp) > 1:
         cv2.rectangle(img, top_left, bottom_right, (0, 0, 255), 3)
         # img = cv2.drawKeypoints(
         #     img,
@@ -81,7 +105,7 @@ if __name__ == '__main__':
     # load data from csv, split into training and test sets
     kp_classifier = joblib.load(KLASSIFIER_PATH)  
     for video_id in range(1, 2):
-        for image_id in range(start_image_id, end_image_id):
+        for image_id in range(start_image_id, min(20, end_image_id)):
             if image_id % 1 == 0:
                 print('%02d %d / %d' % (video_id, image_id, end_image_id,))
             og_img = get_image(video_id, image_id)
