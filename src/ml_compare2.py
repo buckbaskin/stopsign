@@ -120,7 +120,7 @@ if __name__ == '__main__':
     Klassifiers = [
         # DecisionTreeClassifier, # 57-55% accuracy
         # SGDClassifier, # mid 70s accuracy, but it didn't work in practice
-        GradientBoostingClassifier,
+        GradientBoostingClassifier, # Tops out at 60-60% accuracy
     ]
 
     max_iters = list(range(101,202,20))

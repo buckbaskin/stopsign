@@ -102,7 +102,7 @@ This classifier also achieved the maximum accuracy.
 
 The decision tree classifier achieves passing accuracy and very low prediction latency.
 
-## Round 2: Results
+## Round 2: Results Part 1
 
 The two fastest classifiers were Decision Trees and Stochastic Gradient Descent. 
 Both classifiers achieved prediction latency of less than 0.018 sec in multiple configurations.
@@ -144,9 +144,41 @@ The average recall is very low because many splits of 500 elements have no posit
 This is representative where the image doesn't have a stopsign and is very common in the test data.
 The default behavior is to make the metric 0, so the average recall is very low.
 
-## Round 2: Results
+## Round 2: Results Part 2
 
 The resulting classification can be visualized with the demo video. [Demo!](https://youtu.be/ZV9dfaegjz0)
+The classifier worked well when presented with complete data from all of the video.
+When the classifier was applied to new data, it did not properly classify stopsigns.
+Further attempts were made to classify the first video with new data from an expanded multi-video set collected in a variety of lighting situations, rotations and viewing angles.
+This new dataset is complex enough that it did not show good performance with the fast classifiers, either demonstrating excessive positive prediction or virtually no positive prediction and poor (30%) recall.
+Recall was identified as a key metric for vision to be used as a saftey system and the current algorithms demonstrate insufficient recall to be at all useful for this task.
+Collaborative classification by grouping potential positive results proved unhelpful because the algorithm rarely predicted positive results in the region near the stopsign.
+
+## Round 3: Moving Forward
+
+Goals:
+
+    - Increase recall
+    - Use multi-video data collection to create a robust classifier
+    - Explore dimensionality reduction to improve speed of slower algorithms and/or increase score performance for existing fast algorithms
+    - Gain a better understanding of postive (stopsign) keypoints. This includes quantifying how many there are in the current dataset, how many are typically present on a manually identified stopsign, and any visible trends in the values of the descriptor.
+    - Explore adding additional features:
+    	- pixel color
+    	- average region color
+    	- RGB values for above
+    	- HSV values for above
+    	- histogram of colors in region (ex. number of pixels that are red, green, blue, yellow, orange, white, black. A stopsign should have red and possibly white.
+
+Going back to basic principles for exploring the data, 2D plots of different combinations of values for descriptors and potential new features will be visualized and additional correlation measures will be introduced.
+While blind attempts at optimization without understanding any patterns in the data was a fun exercise, new datasets have proven intractable to blind search.
+
+All algorithms are back on the table to be tested with dimensionality reduction on sets of 500 elements (a typical number of keypoints in an image).
+The combined dimensionality reduction and prediction will be required to meet the reduced goal of 10 fps average.
+
+Additional measures will be taken to reduce the impact of datasets with no positive examples.
+These lead to recall being set to 0 and dilute potentially high-recall classifiers.
+Additional measures may be taken to reduce the impact of datasets with no predicted positive examples.
+This may dilute the precision values seen for the classifier, but time, accuracy and recall are higher priorities.
 
 ## Further Considerations
 
