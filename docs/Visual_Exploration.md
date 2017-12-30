@@ -26,9 +26,17 @@ Most probabilities are close to 0.5, so many bits aren't very useful, but there 
 Now to just get that bytes->bits thing working for the much larger negative dataset.
 This will likely require making ~80 smaller datasets.
 
-## Making Smaller Datasets
+### Making Smaller Datasets
 
 `pandas` has a `sample` function that is used to subdivide the negative dataset into 5 different negative datasets of the same size as the positive dataset. This is effectively equivalent to random undersampling.
+
+### Positive Correlation Matrix
+
+![Alt Text](https://raw.githubusercontent.com/buckbaskin/stopsign/master/img/visualize/positive_corr_matrix.png?raw=true "Interesting Alt Text")
+
+### Negative Correlation Matrix
+
+![Alt Text](https://raw.githubusercontent.com/buckbaskin/stopsign/master/img/visualize/negative_corr_matrix.png?raw=true "Interesting Alt Text")
 
 ## Learning with boolean algorithms
 
