@@ -16,9 +16,5 @@ neg, pos = df.groupby(by=klass)
 nclass_, neg = neg
 pclass_, pos = pos
 
-print(neg.describe())
-import sys
-sys.exit(1)
-
 pos.to_csv(POSITIVE_FILE)
 neg.to_csv(NEGATIVE_FILE)
