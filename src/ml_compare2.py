@@ -118,13 +118,15 @@ def make_all_combinations(dict_of_arglists):
 if __name__ == '__main__':
 
     Klassifiers = [
-        DecisionTreeClassifier, # 57-55% accuracy
+        # DecisionTreeClassifier, # 57-55% accuracy
+        SGDClassifier,
     ]
 
-    max_iters = list(range(2,20))
+    max_iters = list(range(1,201,10))
     sgd_spec = {
-        'criterion': ['gini', 'entropy'], # ['gini', 'entropy',],
-        'max_depth': max_iters,
+        'loss': ['hinge', 'log', 'modified_huber',],
+        'penalty': ['l2', 'l1', 'elasticnet',],
+        'max_iter': max_iters,
     }
 
     Klassifier_configs = []
@@ -148,8 +150,8 @@ if __name__ == '__main__':
                 tim_accum = 0
                 for seed in range(0, num_tests):
                     # print('round %4d/%4d' % (seed+1, num_tests))
-                    train_X, train_y, test_X, test_y = scramble_data(bigX, bigy, seed + 1234567)
-                    train_X, train_y = subsample_data(train_X, train_y, 0.5, seed*num_tests+9105)
+                    train_X, train_y, test_X, test_y = scramble_data(bigX, bigy, seed + 1234567 + 16)
+                    train_X, train_y = subsample_data(train_X, train_y, 0.5, seed*num_tests+9105 + 16)
 
                     classifier = Klassifier(**config_setup)
                     classifier.fit(train_X, train_y)

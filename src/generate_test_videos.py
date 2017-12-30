@@ -21,7 +21,7 @@ from sklearn.tree import DecisionTreeClassifier
 rospack = rospkg.RosPack()
 pkg_path = rospack.get_path('stopsign')
 
-KLASSIFIER_PATH = '%s/data/013_extra_man_labels/dtc_classifier06.pkl' % (pkg_path,)
+KLASSIFIER_PATH = '%s/data/013_extra_man_labels/sgd_classifier01.pkl' % (pkg_path,)
 
 IMAGE_BASE_STRING = '%s/data/011_new_tests/%s' % (pkg_path, '%02d/frame%04d.jpg',)
 OUT_BASE_STRING = '%s/data/012_new_tests_out/%s' % (pkg_path, '%02d/frame%04d.jpg',)
@@ -105,7 +105,7 @@ if __name__ == '__main__':
     # load data from csv, split into training and test sets
     kp_classifier = joblib.load(KLASSIFIER_PATH)  
     for video_id in range(1, 2):
-        for image_id in range(start_image_id, end_image_id):
+        for image_id in range(start_image_id, 101): # end_image_id):
             if image_id % 1 == 0:
                 print('%02d %d / %d' % (video_id, image_id, end_image_id,))
             og_img = get_image(video_id, image_id)
