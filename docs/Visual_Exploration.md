@@ -32,9 +32,14 @@ This will likely require making ~80 smaller datasets.
 
 ### Positive Correlation Matrix
 
+Yellow is a positive 1 correlation. Darker colors indicate a greater negative correlation.
+
 ![Alt Text](https://raw.githubusercontent.com/buckbaskin/stopsign/master/img/visualize/positive_corr_matrix.png?raw=true "Interesting Alt Text")
 
 ### Negative Correlation Matrix
+
+Yellow is a positive 1 correlation. Darker colors indicate a greater negative correlation.
+This is an example from one of the datasets.
 
 ![Alt Text](https://raw.githubusercontent.com/buckbaskin/stopsign/master/img/visualize/negative_corr_matrix.png?raw=true "Interesting Alt Text")
 

@@ -19,16 +19,14 @@ for i in range(32):
 
 klass = ['class']
 
-df = pd.read_csv(POSITIVE_FILE, header=0)
+# Vizualize Correlation Matrices
 
-# print(df.describe())
+df = pd.read_csv(POSITIVE_FILE, header=0)
 
 correlation_matrix = df.corr()
 plt.matshow(correlation_matrix)
 plt.savefig('positive_corr_matrix.png')
 plt.show()
-
-# print(correlation_matrix.describe())
 
 for i in range(5):
     df = pd.read_csv(NEGATIVE_FILE % (i,), header=0)
@@ -36,3 +34,12 @@ for i in range(5):
     plt.matshow(correlation_matrix)
     plt.savefig('negative_corr_matrix_%d.png' % (i,))
     plt.show()
+
+# Visualize "Pairwise" Correlation via Karnaugh Maps
+# abcd
+#   00 01 11 10
+# 00
+# 01  counts
+# 11   here
+# 10
+# This would require 4 billion visualizations which would be cool, but tangential to the project
