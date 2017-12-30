@@ -16,10 +16,10 @@ neg, pos = df.groupby(by=klass)
 nclass_, neg = neg
 pclass_, pos = pos
 
-pos.to_csv(POSITIVE_FILE)
+pos.to_csv(POSITIVE_FILE, index=False)
 print('positive written')
 
 for i in range(0, 5):
     little_neg = neg.sample(n=len(pos))
-    neg.to_csv(NEGATIVE_FILE % (i,))
+    little_neg.to_csv(NEGATIVE_FILE % (i,), index=False)
     print('negative %d written' % (i,))

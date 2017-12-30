@@ -5,8 +5,9 @@ import pandas as pd
 from bitstring import BitArray
 
 pkg_path = '/home/buck/ros_ws/src/stopsign'
-START_FILE = '%s/data/015_visualize/positive_200.csv' % (pkg_path,)
-BIT_FILE = '%s/data/015_visualize/positive_bits_200.csv' % (pkg_path,)
+POSITIVE_FILE = '%s/data/015_visualize/positive_200.csv' % (pkg_path,)
+NEGATIVE_FILE = '%s/data/015_visualize/negative_200_%s.csv' % (pkg_path, '%d',)
+BIT_FILE = '%s/data/015_visualize/%s' % (pkg_path, '%s_bits_200%s.csv',)
 
 descriptors = []
 for i in range(32):
@@ -14,25 +15,37 @@ for i in range(32):
 
 klass = ['class'.ljust(7)]
 
-print('read_csv')
+all_files = [POSITIVE_FILE]
+for i in range(5):
+    all_files.append(NEGATIVE_FILE % (i,))
 
-df = pd.read_csv(START_FILE, header=0)
+for index, START_FILE in enumerate(all_files):
+    print('read_csv')
+    print(START_FILE)
 
-print('relabel df')
+    df = pd.read_csv(START_FILE, header=0)
 
-df['class'] = df['class  ']
-df = df.drop(columns=['class  ',])
-df = df.drop(columns=['angle  ', 'classid', 'octave ', 'x'.ljust(7), 'y'.ljust(7), 'respons', 'size   ', 'imageid'])
+    print('relabel df %d' % (len(df),))
 
-bit_label = 'd%02db%01d'
-for desc_index, descriptor in enumerate(descriptors):
-    for bit_index in range(0, 8):
-        new_label = bit_label % (desc_index, bit_index,)
-        df[new_label] = df[descriptor].apply(lambda x: (x // 2**bit_index) % 2)
-    df = df.drop(columns=[descriptor])
-    print('done with % 2d / 32' % (desc_index + 1,))
+    df['class'] = df['class  ']
+    df = df.drop(columns=['class  ',])
+    df = df.drop(columns=['angle  ', 'classid', 'octave ', 'x'.ljust(7), 'y'.ljust(7), 'respons', 'size   ', 'imageid'])
 
-print('write to csv')
+    bit_label = 'd%02db%01d'
+    for desc_index, descriptor in enumerate(descriptors):
+        for bit_index in range(0, 8):
+            new_label = bit_label % (desc_index, bit_index,)
+            df[new_label] = df[descriptor].apply(lambda x: (x // 2**bit_index) % 2)
+        df = df.drop(columns=[descriptor])
+        if desc_index % 8 == 0:
+            print('done with % 2d / 32' % (desc_index + 1,))
 
-print(df.describe())
-df.to_csv(BIT_FILE)
+    print('write to csv')
+
+    # print(df.describe())
+    if index == 0:
+        OUT_FILE = BIT_FILE % ('positive', '',)
+    else:
+        OUT_FILE = BIT_FILE % ('negative', '_%d' % (index - 1),)
+    print(OUT_FILE)
+    df.to_csv(OUT_FILE, index=False)
