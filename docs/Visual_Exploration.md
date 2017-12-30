@@ -28,6 +28,8 @@ This will likely require making ~80 smaller datasets.
 
 ## Making Smaller Datasets
 
+`pandas` has a `sample` function that is used to subdivide the negative dataset into 5 different negative datasets of the same size as the positive dataset. This is effectively equivalent to random undersampling.
+
 ## Learning with boolean algorithms
 
 - Boosted Decision Trees
