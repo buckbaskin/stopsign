@@ -119,14 +119,16 @@ if __name__ == '__main__':
 
     Klassifiers = [
         # DecisionTreeClassifier, # 57-55% accuracy
-        SGDClassifier,
+        # SGDClassifier, # mid 70s accuracy, but it didn't work in practice
+        GradientBoostingClassifier,
     ]
 
-    max_iters = list(range(1,201,10))
+    max_iters = list(range(101,202,20))
+    max_depth = list(range(1,11))
     sgd_spec = {
-        'loss': ['hinge', 'log', 'modified_huber',],
-        'penalty': ['l2', 'l1', 'elasticnet',],
-        'max_iter': max_iters,
+        'loss': ['deviance', 'exponential',],
+        'n_estimators': [100,],
+        'max_depth': max_depth,
     }
 
     Klassifier_configs = []
