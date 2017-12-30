@@ -5,8 +5,8 @@ import pandas as pd
 from bitstring import BitArray
 
 pkg_path = '/home/buck/ros_ws/src/stopsign'
-START_FILE = '%s/data/015_visualize/negative_200.csv' % (pkg_path,)
-BIT_FILE = '%s/data/015_visualize/negative_bits_200.csv' % (pkg_path,)
+START_FILE = '%s/data/015_visualize/positive_200.csv' % (pkg_path,)
+BIT_FILE = '%s/data/015_visualize/positive_bits_200.csv' % (pkg_path,)
 
 descriptors = []
 for i in range(32):

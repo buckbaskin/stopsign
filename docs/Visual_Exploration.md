@@ -21,4 +21,14 @@ Most probabilities are close to 0.5, so many bits aren't very useful, but there 
 
 ## 2D Visualizing the correlation between bits
 
-`pandas` has a .corr function that gives the correlation matrix :). And `matplotlib`/`pyplot` has a function to plot the correlation matrix :). Now to just get that bytes->bits thingnginging
+`pandas` has a .corr function that gives the correlation matrix :). And `matplotlib`/`pyplot` has a function to plot the correlation matrix :).
+
+Now to just get that bytes->bits thing working for the much larger negative dataset.
+This will likely require making ~80 smaller datasets.
+
+## Making Smaller Datasets
+
+## Learning with boolean algorithms
+
+- Boosted Decision Trees
+- Logistic Regression
