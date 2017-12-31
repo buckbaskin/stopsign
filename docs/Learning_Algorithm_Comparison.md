@@ -180,6 +180,39 @@ These lead to recall being set to 0 and dilute potentially high-recall classifie
 Additional measures may be taken to reduce the impact of datasets with no predicted positive examples.
 This may dilute the precision values seen for the classifier, but time, accuracy and recall are higher priorities.
 
+### Visualization
+
+See Visual_Exploration.
+
+### Promising Algorithms
+
+Using some basic tips from a web page I found, I started tracking accuracy for both the training and test datasets.
+If the accuracy is low for both, the classifier has High Bias.
+If the accuracy is lower for the test data set, the model is overfitting and has High Variance.
+The other potential tradeoff for the algorithm is high precision vs. high recall.
+
+In the process of testing some new algorithms on bitwise data (instead of aggregated integer data) the AdaBoosted Decision Tree Regressor/Classifier shows promise.
+Its performance degrades with increasing maximum depth; however, initial test runs with a large number of boosting steps reached nearly 100% classification of training data and increasing accuracy on the test data.
+It also showed increasing precision and recall. These may be split into test and training evaluations as well in the future to aid in identification of bias or variance.
+
+The model above can be tuned using decision tree parameters (primarily `max_depth`), AdaBoost parameters (`n_estimators`, `learning_rate`, `loss`) and the thresholding value (currently 0.5).
+The thresholding value will be explored as a tradeoff between precision and recall at any parameter set.
+The parameters will be tuned to maximize accuracy while maintaining the 30fps prediction rate (< 0.033 sec per prediction).
+
+#### Future Steps
+
+    1. Plot model prediction latency as a function of `max_depth` for varying values of `n_estimators`. Plot alongside the threshold line.
+    2. Plot model prediction latency as a function of `n_estimators` for varying values of `max_depth`. Plot alongside the threshold line.
+    3. Use these plots to estimate the effects (linear, sublinear, superlinear) for helping estimate the boundary for trading off the two using maximum prediction time available.
+    4. Pick a set of parameters. Plot precision/recall curves for those parameters. Measure the area under the curve.
+    5. Evaluate model for bias, variance, precision, recall tradeoffs.
+        - High Bias: add additional model features, additional training data
+        - High Variance: add training examples, tune model parameters for maximization on the training set
+        - Low Precision: tune threshold
+        - Low Recall: tune threshold
+    6. Exhaustively compare all models that meet the prediction latency requirement. Identify those models with higher areas under the curve (Area under ROC)
+    7. Pick a model and tune the precision/recall on actual video data
+
 ## Further Considerations
 
 For robot saftey, the robot should stop immediately if there is a stopsign visible. With a weaker mandate, the robot shouldn't stop working unless there is a stopsign. In terms of metrics, the robot should aim for high recall for saftey and high precision for allowing continued operation.
