@@ -101,7 +101,7 @@ if __name__ == '__main__':
     ]
 
     dtr_spec = {
-        'n_estimators': list(range(1,302, 30)),
+        'n_estimators': list(range(1,152, 30)),
     }
 
     Klassifier_configs = []
