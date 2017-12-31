@@ -169,9 +169,9 @@ if __name__ == '__main__':
             print('a: %.4f (avg percent correctly classified)' % (sum(acc)/len(acc),))
             print('Top Accuracies')
             print('90 percent of max accuracy cutoff')
-            sorted_ = sorted(enumerate(acc), key=lambda x: -x[1])
+            sorted_ = list(sorted(enumerate(acc), key=lambda x: -x[1]))
             top_acc = sorted_[0][1]
-            sorted_ = filter(lambda x: x[1] >= top_acc * 0.9, sorted_)
+            sorted_ = list(filter(lambda x: x[1] >= top_acc * 0.9, sorted_))
             for acc_index, accuracy in sorted_[:15]:
                 print('% 4.2f | %s' % (accuracy * 100, Klassifier_configs[acc_index],))
                 print('% 4.2f | training accuracy' % (train_acc[acc_index] * 100.0,))
@@ -182,6 +182,6 @@ if __name__ == '__main__':
             print('t: %.6f avg sec' % (sum(tim) / len(tim)))
             print('Top Prediction Latencies')
             print('Top 10')
-            sorted_ = sorted(enumerate(tim), key=lambda x: x[1])
+            sorted_ = list(sorted(enumerate(tim), key=lambda x: x[1]))
             for tim_index, pred_latency in sorted_[:10]:
                 print('%.6f | %s' % (pred_latency, Klassifier_configs[tim_index]))
