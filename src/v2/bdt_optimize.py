@@ -101,7 +101,7 @@ if __name__ == '__main__':
     ]
 
     dtr_spec = {
-        'max_depth': list(range(1, 10)),
+        'max_depth': list(range(1, 11)),
     }
 
     Klassifier_configs = []
