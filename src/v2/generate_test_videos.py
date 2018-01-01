@@ -1,5 +1,5 @@
-#!/usr/bin/env python
-import rospkg
+#!/usr/bin/env python3
+print('python3')
 
 import cv2
 import datetime

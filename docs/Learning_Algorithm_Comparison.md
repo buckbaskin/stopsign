@@ -240,6 +240,23 @@ Precision and recall are largely balanced at this point in the evaluation. No tu
 The model does appear to have some overfitting (high variance).
 The recommended changes are to reduce features or increase the size of the dataset.
 
+## Round 3: Video Attempt 1
+
+The labelling for the first dataset shows that the model's test accuracy isn't reliable enough for use in the actual video data. For example, consider two pictures. These come from the 75th and 76th frames of the video. The image (upon visual inspection) is similar, but one contains multiple stopsign identifications on the stopsign (75) and one does not (76). The model ran with essentially 99% training accuracy and 78% test accuracy, so this data proves that the model is overfitting the training data.
+
+![Alt Text](https://raw.githubusercontent.com/buckbaskin/stopsign/master/img/bdt_v2/frame0075.png?raw=true "Interesting Alt Text")
+
+![Alt Text](https://raw.githubusercontent.com/buckbaskin/stopsign/master/img/bdt_v2/frame0076.png?raw=true "Interesting Alt Text")
+
+There are two avenues that will leverage existing code that will be attempted before moving to additional code.
+First, the video will be generated with a high recall threshold classifier.
+This may fix the issue, but the second step will likely also be useful. 
+I'm going to label an additional 500 random images.
+This will become an expanded training dataset, which will first be used like the 200 image dataset.
+After that, the 200 image dataset will be used as verification for the accuracy of the classifier trained on the complete 500 image dataset to better estimate the generalization of the classifier.
+
+Bagging and other classifiers combined with boosting/bagging will be investigated if the current algorithm doesn't generalize well with the existing data.
+
 #### Future Steps
 
     5. Evaluate model for bias, variance, precision, recall tradeoffs.

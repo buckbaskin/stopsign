@@ -163,7 +163,7 @@ if __name__ == '__main__':
     top_acc = sorted_[0][1]
     sorted_ = list(filter(lambda x: x[1] >= top_acc * 0.9, sorted_))
     for acc_index, accuracy in sorted_[:15]:
-        print('% 4.2f | %s' % (accuracy * 100, Klassifier_configs[acc_index],))
+        print('% 4.2f | test accuracy' % (accuracy * 100,))
         print('% 4.2f | training accuracy' % (train_acc[acc_index] * 100.0,))
 
     print('p: %.4f (avg percent of correct positives)' % (sum(pre)/len(pre),))
@@ -174,7 +174,7 @@ if __name__ == '__main__':
     print('Top 10')
     sorted_ = list(sorted(enumerate(tim), key=lambda x: x[1]))
     for tim_index, pred_latency in sorted_[:10]:
-        print('%.6f | %s' % (pred_latency, Klassifier_configs[tim_index]))
+        print('%.6f sec | prediction latency' % (pred_latency,))
 
     print('begin saving classifier')
     saver = AdaBoostRegressor(
@@ -183,5 +183,5 @@ if __name__ == '__main__':
             n_estimators=n_estimators)
     saver.fit(train_X, train_y)
     print('done with fitting')
-    joblib.dumps(KLASSIFIER_FILE)
+    joblib.dump(saver, KLASSIFIER_PATH)
     print('done with saving')
