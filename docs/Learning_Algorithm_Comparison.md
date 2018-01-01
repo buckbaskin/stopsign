@@ -225,13 +225,13 @@ The model with a depth of 7 could be found to meet requirements with fewer estim
 | 7         | 121           | 0.027 sec     | 94%       | 76%       |
 | 7         | 151           | ~~0.034 sec~~ | 95%       | 76%       |
 | 7         | 300           | ~~0.068 sec~~ | 99%       | 77%       |
-| 6         | 31            | 0.003 sec     | 72%       | 67%       |
-| 6         | 300           | 0.003 sec     | 73%       | 68%       |
-| 5         | 300           | <0.001 sec    | 63%       | 61%       |
+| 6         | 31            | 0.003 sec     | 72%       | ~~67%~~   |
+| 6         | 300           | 0.003 sec     | 73%       | ~~68%~~   |
+| 5         | 300           | <0.001 sec    | ~~63%~~   | ~~61%~~   |
 
 The data suggests that one can achieve maximal training accuracy with a `max_depth` of 9.
 This means that decision tree models won't gain any training benefit by getting deeper with the current dataset.
-The data presented here suggests that the model begins to overfit somewhere greater than a depth of 10 (decreasing test accuracy for the same train accuracy); however the maximum depth may not be reached because the prediction latency of the models is effectively the same.
+The data presented here suggests that the model begins to excessively overfit somewhere greater than a depth of 10 (decreasing test accuracy for the same train accuracy); however the maximum depth may not be reached because the prediction latency of the models is effectively the same.
 The maximum performance appears to be attainable with a `n_estimators` value of 121.
 Work was not done to push this value down. It is considered comfortably within the prediction latency requirement.
 On the other hand, reducing this parameter may help avoid overfitting. 

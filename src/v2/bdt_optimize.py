@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-# import cv2
 import datetime
 import joblib
 import numpy as np
@@ -9,16 +8,6 @@ import pandas as pd
 from sklearn.metrics import accuracy_score, precision_score, recall_score
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import AdaBoostRegressor
-
-# import matplotlib
-# matplotlib.use('TKAgg')
-# from matplotlib import pyplot as plt
-
-# class  ,descr00,descr01,descr02,descr03,descr04,descr05,descr06,descr07,
-# descr08,descr09,descr10,descr11,descr12,descr13,descr14,descr15,descr16,
-# descr17,descr18,descr19,descr20,descr21,descr22,descr23,descr24,descr25,
-# descr26,descr27,descr28,descr29,descr30,descr31,angle  ,classid,octave ,
-# x      ,y      ,respons,size   ,imageid
 
 pkg_path = '/home/buck/ros_ws/src/stopsign'
 
