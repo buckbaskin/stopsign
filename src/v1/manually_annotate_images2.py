@@ -12,7 +12,7 @@ pkg_path = '/home/buck/ros_ws/src/stopsign'
 
 IMAGE_RATE = 11 # hz
 
-EXACT_FILE = '%s/data/013_extra_man_labels/all_200.csv' % (pkg_path,)
+EXACT_FILE = '%s/data/013_extra_man_labels/all_500.csv' % (pkg_path,)
 
 start_image_id = 1
 end_image_id = 1093
@@ -21,7 +21,7 @@ start_video_id = 1
 end_video_id = 25
 
 IMAGE_BASE_STRING = '%s/data/011_new_tests/%s' % (pkg_path, '%02d/frame%04d.jpg')
-OUT_BASE_STRING = '%s/data/013_extra_man_labels/200/%s' % (pkg_path, 'frame_%02d_%04d.jpg')
+OUT_BASE_STRING = '%s/data/013_extra_man_labels/500/%s' % (pkg_path, 'frame_%02d_%04d.jpg')
 
 def get_image(video_id, image_id):
     filename = IMAGE_BASE_STRING % (video_id, image_id,)
@@ -199,13 +199,13 @@ print('Done Prefilling Data')
 
 # Hand label sampled images and auto fill the rest
 
-random.seed(123456789)
+random.seed(8675309)
 
 # label 100 random images from the dataset
 # TODO(buckbaskin) explore changing kp parameters because stopsigns showing w/o 
 # keypoints even on large stopsigns
 
-for _ in range(200):
+for _ in range(500):
     video_id = random.randrange(start_video_id, end_video_id)
     image_id = random.randrange(start_image_id, end_image_id)
     img = get_image(video_id, image_id)
