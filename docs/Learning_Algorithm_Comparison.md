@@ -242,11 +242,15 @@ The recommended changes are to reduce features or increase the size of the datas
 
 ## Round 3: Video Attempt 1
 
-The labelling for the first dataset shows that the model's test accuracy isn't reliable enough for use in the actual video data. For example, consider two pictures. These come from the 75th and 76th frames of the video. The image (upon visual inspection) is similar, but one contains multiple stopsign identifications on the stopsign (75) and one does not (76). The model ran with essentially 99% training accuracy and 78% test accuracy, so this data proves that the model is overfitting the training data.
+The labelling for the first dataset shows that the model's test accuracy isn't reliable enough for use in the actual video data. For example, consider two pictures. These come from the 75th and 76th frames of the video. The image (upon visual inspection) is similar, but one contains multiple stopsign identifications on the stopsign (75, large green circles) and one does not (76). The model ran with essentially 99% training accuracy and 78% test accuracy, so this data proves that the model is overfitting the training data.
 
-![Alt Text](https://raw.githubusercontent.com/buckbaskin/stopsign/master/img/bdt_v2/frame0075.png?raw=true "Interesting Alt Text")
+### 75
 
-![Alt Text](https://raw.githubusercontent.com/buckbaskin/stopsign/master/img/bdt_v2/frame0076.png?raw=true "Interesting Alt Text")
+![Alt Text](https://raw.githubusercontent.com/buckbaskin/stopsign/master/img/bdt_v2/frame0075.jpg?raw=true "Interesting Alt Text")
+
+### 76
+
+![Alt Text](https://raw.githubusercontent.com/buckbaskin/stopsign/master/img/bdt_v2/frame0076.jpg?raw=true "Interesting Alt Text")
 
 There are two avenues that will leverage existing code that will be attempted before moving to additional code.
 First, the video will be generated with a high recall threshold classifier.
