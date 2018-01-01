@@ -131,7 +131,7 @@ if __name__ == '__main__':
                     train_X, train_y, test_X, test_y = scramble_data(bigX, bigy, seed)
                     
                     rng = np.random.RandomState(seed+1)
-                    classifier = AdaBoostRegressor(Klassifier(max_depth=10), random_state=rng, **config_setup)
+                    classifier = AdaBoostRegressor(Klassifier(max_depth=40), random_state=rng, **config_setup)
                     classifier.fit(train_X, train_y)
                     y_pred = classifier.predict(train_X)
                     y_pred = np.where(y_pred > 0.5, 1, 0)

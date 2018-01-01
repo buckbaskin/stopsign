@@ -213,6 +213,8 @@ The model with a depth of 7 could be found to meet requirements with fewer estim
 
 | Max Depth | N Estimators  | Pred Latency  | Train acc | Test acc  |
 | ---       | ---           | ---           | ---       | ---       |
+| 20        | 91            | 0.026 sec     | 100%      | 75%       |
+| 20        | 121           | ~~0.034 sec~~ | 100%      | 76%       |
 | 10        | 91            | 0.026 sec     | 100%      | 78%       |
 | 10        | 121           | ~~0.034 sec~~ | 100%      | 78%       |
 | 9         | 121           | 0.031 sec     | 100%      | 78%       |
@@ -227,17 +229,25 @@ The model with a depth of 7 could be found to meet requirements with fewer estim
 | 6         | 300           | 0.003 sec     | 73%       | 68%       |
 | 5         | 300           | <0.001 sec    | 63%       | 61%       |
 
+The data suggests that one can achieve maximal training accuracy with a `max_depth` of 9.
+This means that decision tree models won't gain any training benefit by getting deeper with the current dataset.
+The data presented here suggests that the model begins to overfit somewhere greater than a depth of 10 (decreasing test accuracy for the same train accuracy); however the maximum depth may not be reached because the prediction latency of the models is effectively the same.
+The maximum performance appears to be attainable with a `n_estimators` value of 121.
+Work was not done to push this value down. It is considered comfortably within the prediction latency requirement.
+On the other hand, reducing this parameter may help avoid overfitting. 
+
+Precision and recall are largely balanced at this point in the evaluation. No tuning of the threshold has been done up to this point.
+The model does appear to have some overfitting (high variance).
+The recommended changes are to reduce features or increase the size of the dataset.
+
 #### Future Steps
 
-    1. Plot model prediction latency as a function of `max_depth` for varying values of `n_estimators`. Plot alongside the threshold line.
-    2. Plot model prediction latency as a function of `n_estimators` for varying values of `max_depth`. Plot alongside the threshold line.
-    3. Use these plots to estimate the effects (linear, sublinear, superlinear) for helping estimate the boundary for trading off the two using maximum prediction time available.
-    4. Pick a set of parameters. Plot precision/recall curves for those parameters. Measure the area under the curve.
     5. Evaluate model for bias, variance, precision, recall tradeoffs.
         - High Bias: add additional model features, additional training data
         - High Variance: add training examples, tune model parameters for maximization on the training set
         - Low Precision: tune threshold
         - Low Recall: tune threshold
+    4. Pick a set of parameters. Plot precision/recall curves for those parameters. Measure the area under the curve.
     6. Exhaustively compare all models that meet the prediction latency requirement. Identify those models with higher areas under the curve (Area under ROC)
     7. Pick a model and tune the precision/recall on actual video data
 
