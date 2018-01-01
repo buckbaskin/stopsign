@@ -199,6 +199,34 @@ The model above can be tuned using decision tree parameters (primarily `max_dept
 The thresholding value will be explored as a tradeoff between precision and recall at any parameter set.
 The parameters will be tuned to maximize accuracy while maintaining the 30fps prediction rate (< 0.033 sec per prediction).
 
+### Exploring Boosted Decision Trees
+
+The model accuracy and other parameters increase with depth (both test and training); however, there is an observed significant jump in prediction latency with a maximum depth of 7 or more that violates the prediction latency requirement.
+This could be mitigated by changing the learning rate the achieve similar results with fewer estimators with a `max_depth` of 7 or more.
+This could also be mitigated by running two predictors in parallel.
+This does not fix high latency, but it would potentially allow for increased throughput to predict for 30 frames every second, with two predictors of not less than 0.067 sec prediction latency.
+Each predictor would predict either even or odd frames.
+The robot would then travel at most 13 cm at maximum speed before the prediction would occur and likely be able to stop within 20 cm and less than 1 foot.
+
+Of particular note during this testing, the model maximum depth had a significant effect on model latency. A depth of 6 or lower met latency requirements and a depth of 7 or greater did not when run with 300 estimators in the boosting.
+The model with a depth of 7 could be found to meet requirements with fewer estimators; however, the number of estimators did not significantly affect the performance (accuracy or latency) of a model of depth 6.
+
+| Max Depth | N Estimators  | Pred Latency  | Train acc | Test acc  |
+| ---       | ---           | ---           | ---       | ---       |
+| 10        | 91            | 0.026 sec     | 100%      | 78%       |
+| 10        | 121           | ~~0.034 sec~~ | 100%      | 78%       |
+| 9         | 121           | 0.031 sec     | 100%      | 78%       |
+| 9         | 151           | ~~0.039 sec~~ | 100%      | 78%       |
+| 9         | 300           | ~~0.079 sec~~ | 100%      | 78%       |
+| 8         | 121           | 0.029 sec     | 99%       | 77%       |
+| 8         | 151           | ~~0.036 sec~~ | 99%       | 77%       |
+| 7         | 121           | 0.027 sec     | 94%       | 76%       |
+| 7         | 151           | ~~0.034 sec~~ | 95%       | 76%       |
+| 7         | 300           | ~~0.068 sec~~ | 99%       | 77%       |
+| 6         | 31            | 0.003 sec     | 72%       | 67%       |
+| 6         | 300           | 0.003 sec     | 73%       | 68%       |
+| 5         | 300           | <0.001 sec    | 63%       | 61%       |
+
 #### Future Steps
 
     1. Plot model prediction latency as a function of `max_depth` for varying values of `n_estimators`. Plot alongside the threshold line.

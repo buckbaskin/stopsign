@@ -101,7 +101,7 @@ if __name__ == '__main__':
     ]
 
     dtr_spec = {
-        'n_estimators': list(range(1,152, 30)),
+        'n_estimators': list(range(1,302, 30)),
     }
 
     Klassifier_configs = []
@@ -131,7 +131,7 @@ if __name__ == '__main__':
                     train_X, train_y, test_X, test_y = scramble_data(bigX, bigy, seed)
                     
                     rng = np.random.RandomState(seed+1)
-                    classifier = AdaBoostRegressor(Klassifier(max_depth=7), random_state=rng, **config_setup)
+                    classifier = AdaBoostRegressor(Klassifier(max_depth=10), random_state=rng, **config_setup)
                     classifier.fit(train_X, train_y)
                     y_pred = classifier.predict(train_X)
                     y_pred = np.where(y_pred > 0.5, 1, 0)
@@ -162,7 +162,11 @@ if __name__ == '__main__':
                 print('ta:%.4f (percent correctly classified in training)' % (train_acc_accum / num_tests,))
                 print('p: %.4f (percent of correct positives)' % (pre_accum / (num_tests*split_count),))
                 print('r: %.4f (percent of positive results found)' % (rec_accum / (num_tests*split_count),))
-                print('t: %.6f sec' % (tim_accum / (num_tests*split_count),))       
+                avg_time = tim_accum / (num_tests*split_count)
+                print('t: %.6f sec' % (avg_time,))
+                if avg_time > (1.0 / 30):
+                    print('stopping based on hard time limit')
+                    break
 
             print(Klassifier)
             print('Averaged over %d tests' % (num_tests,))
