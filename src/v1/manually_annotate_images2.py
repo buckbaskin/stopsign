@@ -99,7 +99,7 @@ def hand_label_image(img, video_id, image_id):
     # compute the descriptors with ORB
     kp, des = orb.compute(img, kp)
 
-    print('=====\npreview %04d\n' % (image_id,))
+    print('=====\npreview %04d, %04d\n' % (video_id, image_id,))
     print('s -> image has a stopsign.\nUse mouse to select stopsign.')
     print('\nOR\n')
     print('n -> image does not have a stopsign')
@@ -125,8 +125,8 @@ def hand_label_image(img, video_id, image_id):
                 color=(0,255,0),
                 flags=int(cv2.DRAW_MATCHES_FLAGS_DRAW_OVER_OUTIMG))
             cv2.polylines(imgur, [contour], True, (79*i % 255, 0, 255))
-            cv2.imshow('preview', imgur)
-            cv2.setMouseCallback('preview', click_and_crop)
+            cv2.imshow('preview %d %d' % (video_id, image_id,), imgur)
+            cv2.setMouseCallback('preview %d %d' % (video_id, image_id,), click_and_crop)
             val = cv2.waitKey(0) % 256
             if val == ord('s'):
                 set_image(imgur, video_id, image_id)
