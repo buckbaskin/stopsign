@@ -13,8 +13,8 @@ pkg_path = '/home/buck/ros_ws/src/stopsign'
 
 IMAGE_RATE = 30 # hz
 
-POSITIVE_BITS_FILE = '%s/data/016_bit_classifiers/positive_bits_200.csv' % (pkg_path,)
-NEGATIVE_BITS_FILE = '%s/data/016_bit_classifiers/negative_bits_200%s.csv' % (pkg_path, '_%d')
+POSITIVE_BITS_FILE = '%s/data/017_the_500/positive_bits_200.csv' % (pkg_path,)
+NEGATIVE_BITS_FILE = '%s/data/017_the_500/negative_bits_200%s.csv' % (pkg_path, '_%d')
 
 bit_label = 'd%02db%01d'
 
@@ -90,7 +90,7 @@ if __name__ == '__main__':
     ]
 
     dtr_spec = {
-        'n_estimators': list(range(1,302, 30)),
+        'n_estimators': list(range(1,152, 30)),
     }
 
     Klassifier_configs = []
@@ -120,7 +120,7 @@ if __name__ == '__main__':
                     train_X, train_y, test_X, test_y = scramble_data(bigX, bigy, seed)
                     
                     rng = np.random.RandomState(seed+1)
-                    classifier = AdaBoostRegressor(Klassifier(max_depth=40), random_state=rng, **config_setup)
+                    classifier = AdaBoostRegressor(Klassifier(max_depth=7), random_state=rng, **config_setup)
                     classifier.fit(train_X, train_y)
                     y_pred = classifier.predict(train_X)
                     y_pred = np.where(y_pred > 0.5, 1, 0)
