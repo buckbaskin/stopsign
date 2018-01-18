@@ -95,6 +95,7 @@ if __name__ == '__main__':
 
     Klassifier_configs = []
     Klassifier_configs.extend(make_all_combinations(dtr_spec))
+    max_depth = 9
 
     bigX, bigy = load_data(POSITIVE_BITS_FILE, NEGATIVE_BITS_FILE % 0)
 
@@ -120,7 +121,7 @@ if __name__ == '__main__':
                     train_X, train_y, test_X, test_y = scramble_data(bigX, bigy, seed)
                     
                     rng = np.random.RandomState(seed+1)
-                    classifier = AdaBoostRegressor(Klassifier(max_depth=7), random_state=rng, **config_setup)
+                    classifier = AdaBoostRegressor(Klassifier(max_depth=max_depth), random_state=rng, **config_setup)
                     classifier.fit(train_X, train_y)
                     y_pred = classifier.predict(train_X)
                     y_pred = np.where(y_pred > 0.5, 1, 0)
