@@ -13,8 +13,8 @@ pkg_path = '/home/buck/ros_ws/src/stopsign'
 
 IMAGE_RATE = 30 # hz
 
-POSITIVE_BITS_FILE = '%s/data/017_the_500/positive_bits_200.csv' % (pkg_path,)
-NEGATIVE_BITS_FILE = '%s/data/017_the_500/negative_bits_200%s.csv' % (pkg_path, '_%d')
+POSITIVE_BITS_FILE = '%s/data/017_the_500/positive_bits_500.csv' % (pkg_path,)
+NEGATIVE_BITS_FILE = '%s/data/017_the_500/negative_bits_500%s.csv' % (pkg_path, '_%d')
 
 bit_label = 'd%02db%01d'
 
