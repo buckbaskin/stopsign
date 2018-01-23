@@ -101,11 +101,13 @@ if __name__ == '__main__':
         # 2 layers seems to be the most accurate with less overfitting
         'hidden_layer_sizes': [
             tuple([135,]*2),
-            ],
+        ],
+        'verbose': [True,],
     }
 
     ensemble_spec = {
-        'n_estimators': 20,
+        'n_estimators': 12,
+        'n_jobs': -1,
     }
 
     Klassifier_configs = []
@@ -139,7 +141,10 @@ if __name__ == '__main__':
                     rng = np.random.RandomState(seed+1)
                     classifier = Ensembler(Klassifier(**config_setup), random_state=rng, **ensemble_spec)
                     # classifier = Klassifier(**config_setup)
+                    print('begin fit')
+                    start = datetime.datetime.now()
                     classifier.fit(train_X, train_y)
+                    print('end fit | %.1f sec' % ((datetime.datetime.now() - start).total_seconds(),))
                     y_pred = classifier.predict(train_X)
                     y_pred = np.where(y_pred > 0.5, 1, 0)
 
@@ -148,8 +153,11 @@ if __name__ == '__main__':
                     X_splits = np.array_split(test_X, split_count)
                     y_splits = np.array_split(test_y, split_count)
 
-                    split_version = zip(X_splits, y_splits)
+                    split_version = list(zip(X_splits, y_splits))
+                    count = 0
                     for test_X_sub, test_y_sub in split_version:
+                        count += 1
+                        print('sub round %4d/%4d | %.1f sec' % (count, len(split_version), (datetime.datetime.now() - start).total_seconds(),))
                         stime = datetime.datetime.now()
                         y_pred = classifier.predict(test_X_sub)
                         y_pred = np.where(y_pred > 0.5, 1, 0)
@@ -176,6 +184,7 @@ if __name__ == '__main__':
                     break
 
             print(Klassifier)
+            print(Ensembler)
             print('Averaged over %d tests' % (num_tests,))
             # better accuracy summary
             print('a: %.4f (avg percent correctly classified)' % (sum(acc)/len(acc),))
