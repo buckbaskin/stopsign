@@ -7,7 +7,7 @@ import pandas as pd
 
 from sklearn.metrics import accuracy_score, precision_score, recall_score
 from sklearn.neural_network import MLPClassifier
-from sklearn.ensemble import AdaBoostRegressor
+from sklearn.ensemble import AdaBoostRegressor, BaggingRegressor
 
 pkg_path = '/home/buck/ros_ws/src/stopsign'
 
@@ -89,7 +89,7 @@ if __name__ == '__main__':
         MLPClassifier, 
     ]
 
-    # experimentally, 300 nodes is the max
+    # experimentally, about 300-320 nodes is the max
     mlp_spec = {
         'activation': ['tanh',],
         'solver': ['adam',], # ['lbfgs', 'sgd', 'adam',],
@@ -97,22 +97,21 @@ if __name__ == '__main__':
         # accuracy was 75%+ at 80 for the first layer w/ 85% training acc
         # when trying to increase depth, the accuracy drops
         # so now, pushing width vs time tradeoff at 2 layers
+
+        # 2 layers seems to be the most accurate with less overfitting
         'hidden_layer_sizes': [
-            tuple([150,]*2),
-            tuple([160,]*2),
-            tuple([170,]*2),
-            tuple([180,]*2),
-            tuple([190,]*2),
-            tuple([200,]*2),
+            tuple([135,]*2),
             ],
     }
 
-    boost_spec = {
+    ensemble_spec = {
         'n_estimators': 20,
     }
 
     Klassifier_configs = []
     Klassifier_configs.extend(make_all_combinations(mlp_spec))
+
+    Ensembler = BaggingRegressor
 
     bigX, bigy = load_data(POSITIVE_BITS_FILE, NEGATIVE_BITS_FILE % 0)
 
@@ -138,8 +137,8 @@ if __name__ == '__main__':
                     train_X, train_y, test_X, test_y = scramble_data(bigX, bigy, seed)
                     
                     rng = np.random.RandomState(seed+1)
-                    # classifier = AdaBoostRegressor(Klassifier(**config_setup), random_state=rng, **boost_spec)
-                    classifier = Klassifier(**config_setup)
+                    classifier = Ensembler(Klassifier(**config_setup), random_state=rng, **ensemble_spec)
+                    # classifier = Klassifier(**config_setup)
                     classifier.fit(train_X, train_y)
                     y_pred = classifier.predict(train_X)
                     y_pred = np.where(y_pred > 0.5, 1, 0)
