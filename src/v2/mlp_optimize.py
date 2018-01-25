@@ -139,7 +139,10 @@ if __name__ == '__main__':
                     train_X, train_y, test_X, test_y = scramble_data(bigX, bigy, seed)
                     
                     rng = np.random.RandomState(seed+1)
-                    classifier = Ensembler(Klassifier(**config_setup), random_state=rng, **ensemble_spec)
+                    classifier = Ensembler(
+                        Klassifier(**config_setup), 
+                        random_state=rng,
+                        **ensemble_spec)
                     # classifier = Klassifier(**config_setup)
                     print('begin fit')
                     start = datetime.datetime.now()
