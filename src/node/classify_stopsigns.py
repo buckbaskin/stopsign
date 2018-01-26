@@ -63,9 +63,11 @@ def classify_image(image):
     if np.sum(y) > 10:
         # publish true on stopsign channel
         pub_buddy.publish(Bool(True))
+        return True
     else:
         # publish false on stopsign channel
         pub_buddy.publish(Bool(False))
+        return False
 
 
 if __name__ == '__main__':
