@@ -4,17 +4,25 @@ import rospy
 import cv2
 import joblib
 import rospkg
+import platform
 
+from cv_bridge import CvBridge, CvBridgeError
 from imblearn.under_sampling import RandomUnderSampler
+from sensor_msgs.msg import Image
 from sklearn.neighbors import KNeighborsClassifier
+from std_msgs.msg import Bool
 
 rospack = rospkg.RosPack()
 pkg_path = rospack.get_path('stopsign')
 
-MODEL_STORE_FILE = '%s/classifiers/mlp_classifier.pkl' % (pkg_path,)
-classifier = joblib.load(MODEL_STORE_FILE)
+KLASSIFIER_PATH = '%s/data/017_the_500/competition_classifier01_%s.pkl' % (pkg_path, platform.python_version(),)
+REDUCER_PATH = '%s/data/017_the_500/competition_reducer01_%s.pkl' % (pkg_path, platform.python_version(),)
+classifier = joblib.load(KLASSIFIER_PATH)
+reducer = joblib.load(REDUCER_PATH)
 
-ORB = cv2.createORB()
+NUM_FEATURES = 500
+
+orb = cv2.ORB_create(nfeatures = NUM_FEATURES)
 
 bridge = CvBridge()
 
@@ -39,24 +47,23 @@ def image_cb(image_msg):
         print cvbe
         return None
 
+pub_buddy = rospy.Publisher('/stopsign', Bool, queue_size=3)
 
 def classify_image(image):
-    kp = ORB.fit(image)
-    kp, des = ORB.describe(image, kp)
-
+    kp = orb.detect(image, None)
+    kp, des = orb.compute(img, kp)
     # kp to bitwise numpy array
-    X = kp
-    y = classifier.predict(X)
-
-    # filter down to matches
+    X = des
+    smol_X = reducer.transform(X)
+    y = classifier.predict(smol_X)
 
     # classify image based on match count
-    if len(y) > 10:
+    if np.sum(y) > 10:
         # publish true on stopsign channel
-        pass
+        pub_buddy.publish(Bool(True))
     else:
         # publish false on stopsign channel
-        pass
+        pub_buddy.publish(Bool(False))
 
 
 if __name__ == '__main__':
@@ -71,7 +78,11 @@ if __name__ == '__main__':
     '''
     image_in = rospy.Subscriber('/camera/image/rgb', Image, image_cb)
     rospy.init_node('find_me_stopsigns')
-    while rospy.isnt_dead():
-        rospy.spinOnce()
+    rate = rospy.Rate(30)
+    while not rospy.is_shutdown():
         if global_cv_image is not None:
+            print('processing CV image')
             classify_image(image)
+        else:
+            print('no CV image recieved in last cycle')
+        rate.sleep()
