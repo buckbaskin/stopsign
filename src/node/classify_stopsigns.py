@@ -7,9 +7,7 @@ import rospkg
 import platform
 
 from cv_bridge import CvBridge, CvBridgeError
-from imblearn.under_sampling import RandomUnderSampler
 from sensor_msgs.msg import Image
-from sklearn.neighbors import KNeighborsClassifier
 from std_msgs.msg import Bool
 
 rospack = rospkg.RosPack()
