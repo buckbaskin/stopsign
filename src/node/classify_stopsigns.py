@@ -23,6 +23,7 @@ reducer = joblib.load(REDUCER_PATH)
 NUM_FEATURES = 500
 
 orb = cv2.ORB_create(nfeatures = NUM_FEATURES)
+preset = np.zeros((NUM_FEATURES, 256,))
 
 bridge = CvBridge()
 
@@ -53,7 +54,10 @@ def classify_image(image):
     kp = orb.detect(image, None)
     kp, des = orb.compute(img, kp)
     # kp to bitwise numpy array
-    X = des
+    global preset
+    preset = np.unpackbits(des, axis=1)
+    
+    X = preset
     smol_X = reducer.transform(X)
     y = classifier.predict(smol_X)
 

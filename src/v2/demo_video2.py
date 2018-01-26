@@ -39,12 +39,6 @@ def get_image(video_id, image_id):
 num_features = 500
 preset = np.zeros((500, 256,))
 
-def expand_des_to_preset(des):
-    global preset
-    print(des)
-    print(type(des))
-
-
 def colorize_image(img, classifier, reducer):
     height, width, channels = img.shape
     area = height*width
