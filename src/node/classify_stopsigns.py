@@ -7,9 +7,7 @@ import rospkg
 import platform
 
 from cv_bridge import CvBridge, CvBridgeError
-from imblearn.under_sampling import RandomUnderSampler
 from sensor_msgs.msg import Image
-from sklearn.neighbors import KNeighborsClassifier
 from std_msgs.msg import Bool
 
 rospack = rospkg.RosPack()
@@ -22,7 +20,7 @@ reducer = joblib.load(REDUCER_PATH)
 
 NUM_FEATURES = 500
 
-orb = cv2.ORB_create(nfeatures = NUM_FEATURES)
+orb = cv2.ORB(nfeatures = NUM_FEATURES)
 preset = np.zeros((NUM_FEATURES, 256,))
 
 bridge = CvBridge()
@@ -52,7 +50,7 @@ pub_buddy = rospy.Publisher('/stopsign', Bool, queue_size=3)
 
 def classify_image(image):
     kp = orb.detect(image, None)
-    kp, des = orb.compute(img, kp)
+    kp, des = orb.compute(image, kp)
     # kp to bitwise numpy array
     global preset
     preset = np.unpackbits(des, axis=1)
@@ -71,13 +69,13 @@ def classify_image(image):
 
 
 if __name__ == '__main__':
-    image_in = rospy.Subscriber('/camera/image/rgb', Image, image_cb)
+    image_in = rospy.Subscriber('/camera/image', Image, image_cb)
     rospy.init_node('find_me_stopsigns')
     rate = rospy.Rate(30)
     while not rospy.is_shutdown():
         if global_cv_image is not None:
             print('processing CV image')
-            classify_image(image)
+            classify_image(global_cv_image)
         else:
             print('no CV image recieved in last cycle')
         rate.sleep()
