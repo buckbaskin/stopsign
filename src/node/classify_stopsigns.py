@@ -5,6 +5,7 @@ import cv2
 import joblib
 import rospkg
 import platform
+import numpy as np
 
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image
