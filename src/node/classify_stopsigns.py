@@ -67,15 +67,6 @@ def classify_image(image):
 
 
 if __name__ == '__main__':
-    ### Begin the whole process ###
-
-    '''
-    Things to work on:
-    Vary up the dataset:
-        - Classify the total image instead of just one keypoint
-            - Learn based on the classification of all of the keypoints in the 
-            image and their location
-    '''
     image_in = rospy.Subscriber('/camera/image/rgb', Image, image_cb)
     rospy.init_node('find_me_stopsigns')
     rate = rospy.Rate(30)
