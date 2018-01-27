@@ -28,9 +28,7 @@ REDUCER_PATH = '%s/data/017_the_500/competition_reducer01_%s.pkl' % (pkg_path, p
 IMAGE_BASE_STRING = '%s/data/019_stopsign_images/%s' % (pkg_path, 'frame%04d.jpg',)
 OUT_BASE_STRING = '%s/data/020_demo_video/%s' % (pkg_path, 'frame%04d.jpg',)
 
-GREY_STOPSIGN = '%s/data/019_stopsign_images/stopper%s.jpg' % (pkg_path, '%d')
-
-start_image_id = 300
+start_image_id = 200
 end_image_id = 1093
 
 def get_image(video_id, image_id):
@@ -38,8 +36,8 @@ def get_image(video_id, image_id):
     # print('filename %s' % (filename,))
     return cv2.imread(filename, cv2.IMREAD_COLOR)
 
-num_features = 5000
-preset = np.zeros((500, 256,))
+GREY_STOPSIGN = '%s/data/019_stopsign_images/stopper%s.jpg' % (pkg_path, '%d')
+NUM_FEATURES = 500
 
 SSG = []
 ssgorb = []
@@ -59,24 +57,19 @@ for i in range(4):
 
 buckfm = cv2.BFMatcher(cv2.NORM_HAMMING)
 
-orb = cv2.ORB(nfeatures = num_features, edgeThreshold=5)
-orb = cv2.ORB_create(nfeatures = num_features, edgeThreshold=5)
+orb = cv2.ORB(nfeatures = NUM_FEATURES, edgeThreshold=5)
+orb = cv2.ORB_create(nfeatures = NUM_FEATURES, edgeThreshold=5)
 
 def classify_image(image, image_id, classifier, reducer):
     kp = orb.detect(image, None)
     kp, des = orb.compute(image, kp)
-
+    # kp to bitwise numpy array
     voting = [False] * 4
 
     for index, precompdes in enumerate(ssgdes):
         all_matches = buckfm.match(precompdes, des)
         all_matches.sort(key= lambda match: match.distance)
-        print(all_matches[0].distance)
-        # 0 -> 30, 15 matches
-        # 1 -> 35, 3 matches
-        # 2 -> 25, 5 matches
-        # 3 -> 25, 3 matches
-        # first and last are up close panic stoppers
+
         if index == 0:
             dist_req = 30
         elif index == 1:
@@ -86,17 +79,7 @@ def classify_image(image, image_id, classifier, reducer):
         else:
             dist_req = 20
         matches = list(filter(lambda match: match.distance < 20, all_matches))
-        # if len(matches) > 10:
-        #     matches = matches[:10]
-
-        # if len(matches) < 6:
-        #     return False
-
-        # set_image(outImg, 1, image_id)
-        # 0 -> 30, 15 matches
-        # 1 -> 35, 3 matches
-        # 2 -> 25, 5 matches
-        # 3 -> 25, 3 matches
+        
         if index == 0:
             match_req = 15
         if index == 1:
@@ -108,27 +91,20 @@ def classify_image(image, image_id, classifier, reducer):
         voting[index] = len(matches) >= match_req
 
     outImg = np.zeros((1000,1000,3), np.uint8)
-    outImg = cv2.drawMatches(SSG[index], ssgkp[index], image, kp, matches, outImg=outImg, flags=0)
+    outImg = cv2.drawMatches(SSG[index], ssgkp[index], image, kp, matches, outImg=outImg, flags=2)
     cv2.imshow('matching!', outImg)
-        
-    # cv2.destroyAllWindows()
-    # classify image based on match count
+    cv2.waitKey(300)
+
     vote_count = 0
     for b in voting:
         if b:
             vote_count += 1
     print(voting)
     if vote_count >= 2:
-        # publish true on stopsign channel
-        # pub_buddy.publish(Bool(True))
         print('stopsign!')
-        cv2.waitKey(int(300))
         return True
     else:
-        # publish false on stopsign channel
-        # pub_buddy.publish(Bool(False))
         print('meh')
-        cv2.waitKey(int(300))
         return False
 
 def colorize_image(img, image_id, classifier, reducer):
