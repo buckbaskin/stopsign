@@ -57,7 +57,7 @@ for i in range(4):
         import sys
         sys.exit(1)
     ssgorb.append(cv2.ORB(nfeatures = 500))
-    ssgorb[-1] = cv2.ORB_create(nfeatures = 500, edgeThreshold=5)
+    # ssgorb[-1] = cv2.ORB_create(nfeatures = 500, edgeThreshold=5)
     ssgkp.append(ssgorb[i].detect(SSG[-1], None))
     def_, abc = ssgorb[i].compute(SSG[-1], ssgkp[-1])
     ssgdes.append(abc)
@@ -65,7 +65,7 @@ for i in range(4):
 buckfm = cv2.BFMatcher(cv2.NORM_HAMMING)
 
 orb = cv2.ORB(nfeatures = NUM_FEATURES, edgeThreshold=5)
-orb = cv2.ORB_create(nfeatures = NUM_FEATURES, edgeThreshold=5)
+# orb = cv2.ORB_create(nfeatures = NUM_FEATURES, edgeThreshold=5)
 
 
 def classify_image(image):
@@ -77,6 +77,7 @@ def classify_image(image):
     for index, precompdes in enumerate(ssgdes):
         all_matches = buckfm.match(precompdes, des)
         all_matches.sort(key= lambda match: match.distance)
+	print(all_matches[0].distance)
 
         if index == 0:
             dist_req = 30
@@ -86,7 +87,8 @@ def classify_image(image):
             dist_req = 60
         else:
             dist_req = 20
-        matches = list(filter(lambda match: match.distance < 20, all_matches))
+        matches = list(filter(lambda match: match.distance < dist_req, all_matches))
+	print('list %d' % (len(matches),))
         
         if index == 0:
             match_req = 15
@@ -103,7 +105,7 @@ def classify_image(image):
         if b:
             vote_count += 1
     print(voting)
-    if vote_count >= 2:
+    if vote_count >= 1:
         # publish true on stopsign channel
         pub_buddy.publish(Bool(True))
         print('stopsign!')
@@ -118,11 +120,13 @@ def classify_image(image):
 if __name__ == '__main__':
     image_in = rospy.Subscriber('/camera/image', Image, image_cb)
     rospy.init_node('find_me_stopsigns')
-    rate = rospy.Rate(30)
+    rate = rospy.Rate(5)
     while not rospy.is_shutdown():
         if global_cv_image is not None:
             print('processing CV image')
             classify_image(global_cv_image)
+	    global global_cv_image
+	    global_cv_image = None
         else:
             print('no CV image recieved in last cycle')
         rate.sleep()
