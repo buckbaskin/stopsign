@@ -59,7 +59,7 @@ for i in range(4):
 
 buckfm = cv2.BFMatcher(cv2.NORM_HAMMING)
 
-orb = cv2.ORB(nfeatures = num_features)
+orb = cv2.ORB(nfeatures = num_features, edgeThreshold=5)
 orb = cv2.ORB_create(nfeatures = num_features, edgeThreshold=5)
 
 def classify_image(image, image_id, classifier, reducer):

@@ -14,11 +14,6 @@ from std_msgs.msg import Bool
 rospack = rospkg.RosPack()
 pkg_path = rospack.get_path('stopsign')
 
-KLASSIFIER_PATH = '%s/data/017_the_500/competition_classifier01_%s.pkl' % (pkg_path, platform.python_version(),)
-REDUCER_PATH = '%s/data/017_the_500/competition_reducer01_%s.pkl' % (pkg_path, platform.python_version(),)
-classifier = joblib.load(KLASSIFIER_PATH)
-reducer = joblib.load(REDUCER_PATH)
-
 NUM_FEATURES = 500
 
 orb = cv2.ORB(nfeatures = NUM_FEATURES)
@@ -48,26 +43,75 @@ def image_cb(image_msg):
         return None
 
 pub_buddy = rospy.Publisher('/stopsign', Bool, queue_size=3)
+GREY_STOPSIGN = '%s/data/019_stopsign_images/stopper%s.jpg' % (pkg_path, '%d')
+NUM_FEATURES = 500
+
+SSG = []
+ssgorb = []
+ssgkp = []
+ssgdes = []
+for i in range(4):
+    SSG.append(cv2.imread(GREY_STOPSIGN % i, cv2.IMREAD_COLOR))
+    if SSG[-1] is None:
+        print('Image not loaded')
+        import sys
+        sys.exit(1)
+    ssgorb.append(cv2.ORB(nfeatures = 500))
+    ssgorb[-1] = cv2.ORB_create(nfeatures = 500, edgeThreshold=5)
+    ssgkp.append(ssgorb[i].detect(SSG[-1], None))
+    def_, abc = ssgorb[i].compute(SSG[-1], ssgkp[-1])
+    ssgdes.append(abc)
+
+buckfm = cv2.BFMatcher(cv2.NORM_HAMMING)
+
+orb = cv2.ORB(nfeatures = NUM_FEATURES, edgeThreshold=5)
+orb = cv2.ORB_create(nfeatures = NUM_FEATURES, edgeThreshold=5)
+
 
 def classify_image(image):
     kp = orb.detect(image, None)
     kp, des = orb.compute(image, kp)
     # kp to bitwise numpy array
-    global preset
-    preset = np.unpackbits(des, axis=1)
-    
-    X = preset
-    smol_X = reducer.transform(X)
-    y = classifier.predict(smol_X)
+    voting = [False] * 4
 
-    # classify image based on match count
-    if np.sum(y) > 10:
+    for index, precompdes in enumerate(ssgdes):
+        all_matches = buckfm.match(precompdes, des)
+        all_matches.sort(key= lambda match: match.distance)
+
+        if index == 0:
+            dist_req = 30
+        elif index == 1:
+            dist_req = 60
+        elif index == 2:
+            dist_req = 60
+        else:
+            dist_req = 20
+        matches = list(filter(lambda match: match.distance < 20, all_matches))
+        
+        if index == 0:
+            match_req = 15
+        if index == 1:
+            match_req = 2
+        elif index == 2:
+            match_req = 3
+        else:
+            match_req = 3
+        voting[index] = len(matches) >= match_req
+
+    vote_count = 0
+    for b in voting:
+        if b:
+            vote_count += 1
+    print(voting)
+    if vote_count >= 2:
         # publish true on stopsign channel
         pub_buddy.publish(Bool(True))
+        print('stopsign!')
         return True
     else:
         # publish false on stopsign channel
         pub_buddy.publish(Bool(False))
+        print('meh')
         return False
 
 
