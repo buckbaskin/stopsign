@@ -28,7 +28,7 @@ REDUCER_PATH = '%s/data/017_the_500/competition_reducer01_%s.pkl' % (pkg_path, p
 IMAGE_BASE_STRING = '%s/data/019_stopsign_images/%s' % (pkg_path, 'frame%04d.jpg',)
 OUT_BASE_STRING = '%s/data/020_demo_video/%s' % (pkg_path, 'frame%04d.jpg',)
 
-start_image_id = 200
+start_image_id = 0
 end_image_id = 1093
 
 def get_image(video_id, image_id):
@@ -37,7 +37,7 @@ def get_image(video_id, image_id):
     return cv2.imread(filename, cv2.IMREAD_COLOR)
 
 GREY_STOPSIGN = '%s/data/019_stopsign_images/stopper%s.jpg' % (pkg_path, '%d')
-NUM_FEATURES = 500
+NUM_FEATURES = 2000
 
 SSG = []
 ssgorb = []
@@ -73,25 +73,27 @@ def classify_image(image, image_id, classifier, reducer):
         if index == 0:
             dist_req = 30
         elif index == 1:
-            dist_req = 60
+            dist_req = 40
         elif index == 2:
-            dist_req = 60
+            dist_req = 40
         else:
             dist_req = 20
-        matches = list(filter(lambda match: match.distance < 20, all_matches))
+        matches = list(filter(lambda match: match.distance < dist_req, all_matches))
         
         if index == 0:
-            match_req = 15
+            match_req = 10
         if index == 1:
-            match_req = 2
+            match_req = 4
         elif index == 2:
             match_req = 3
         else:
             match_req = 3
         voting[index] = len(matches) >= match_req
+        if index == 2:
+            break
 
     outImg = np.zeros((1000,1000,3), np.uint8)
-    outImg = cv2.drawMatches(SSG[index], ssgkp[index], image, kp, matches, outImg=outImg, flags=2)
+    outImg = cv2.drawMatches(SSG[index], ssgkp[index], image, kp, matches, outImg=outImg, flags=0)
     cv2.imshow('matching!', outImg)
     cv2.waitKey(300)
 
