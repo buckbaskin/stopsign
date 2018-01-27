@@ -25,68 +25,115 @@ pkg_path = rospack.get_path('stopsign')
 KLASSIFIER_PATH = '%s/data/017_the_500/competition_classifier01_%s.pkl' % (pkg_path, platform.python_version(),)
 REDUCER_PATH = '%s/data/017_the_500/competition_reducer01_%s.pkl' % (pkg_path, platform.python_version(),)
 
-IMAGE_BASE_STRING = '%s/data/011_new_tests/%s' % (pkg_path, '%02d/frame%04d.jpg',)
-OUT_BASE_STRING = '%s/data/018_demo_video/%s' % (pkg_path, 'try%02d/frame%04d.jpg',)
+IMAGE_BASE_STRING = '%s/data/019_stopsign_images/%s' % (pkg_path, 'frame%04d.jpg',)
+OUT_BASE_STRING = '%s/data/020_demo_video/%s' % (pkg_path, 'frame%04d.jpg',)
 
-GREY_STOPSIGN = '%s/data/018_demo_video/stop_sign_grey.jpg' % (pkg_path,)
+GREY_STOPSIGN = '%s/data/019_stopsign_images/stopper%s.jpg' % (pkg_path, '%d')
 
-start_image_id = 1
+start_image_id = 300
 end_image_id = 1093
 
 def get_image(video_id, image_id):
-    filename = IMAGE_BASE_STRING % (video_id, image_id,)
-    print('filename %s' % (filename,))
+    filename = IMAGE_BASE_STRING % (image_id,)
+    # print('filename %s' % (filename,))
     return cv2.imread(filename, cv2.IMREAD_COLOR)
 
 num_features = 5000
 preset = np.zeros((500, 256,))
 
-SSG = cv2.imread(GREY_STOPSIGN, cv2.IMREAD_COLOR)
-if SSG is None:
-    print('Image not loaded')
-    import sys
-    sys.exit(1)
-ssgorb = cv2.ORB(nfeatures = 500)
-ssgorb = cv2.ORB_create(nfeatures = 100)
-ssgkp = ssgorb.detect(SSG, None)
-ssgkp, ssgdes = ssgorb.compute(SSG, ssgkp)
+SSG = []
+ssgorb = []
+ssgkp = []
+ssgdes = []
+for i in range(4):
+    SSG.append(cv2.imread(GREY_STOPSIGN % i, cv2.IMREAD_COLOR))
+    if SSG[-1] is None:
+        print('Image not loaded')
+        import sys
+        sys.exit(1)
+    ssgorb.append(cv2.ORB(nfeatures = 500))
+    ssgorb[-1] = cv2.ORB_create(nfeatures = 500, edgeThreshold=5)
+    ssgkp.append(ssgorb[i].detect(SSG[-1], None))
+    def_, abc = ssgorb[i].compute(SSG[-1], ssgkp[-1])
+    ssgdes.append(abc)
 
 buckfm = cv2.BFMatcher(cv2.NORM_HAMMING)
 
 orb = cv2.ORB(nfeatures = num_features)
-orb = cv2.ORB_create(nfeatures = num_features)
+orb = cv2.ORB_create(nfeatures = num_features, edgeThreshold=5)
 
-def classify_image(image, classifier, reducer):
+def classify_image(image, image_id, classifier, reducer):
     kp = orb.detect(image, None)
     kp, des = orb.compute(image, kp)
-    # kp to bitwise numpy array
-    global preset
-    preset = np.unpackbits(des, axis=1)
-    
-    X = preset
-    smol_X = reducer.transform(X)
-    y = classifier.predict(smol_X)
 
-    matches = buckfm.match(ssgdes, des)
-    matches.sort(key= lambda match: match.distance)
-    matches = list(filter(lambda match: match.distance < 50, matches))
+    voting = [False] * 4
+
+    for index, precompdes in enumerate(ssgdes):
+        all_matches = buckfm.match(precompdes, des)
+        all_matches.sort(key= lambda match: match.distance)
+        print(all_matches[0].distance)
+        # 0 -> 30, 15 matches
+        # 1 -> 35, 3 matches
+        # 2 -> 25, 5 matches
+        # 3 -> 25, 3 matches
+        # first and last are up close panic stoppers
+        if index == 0:
+            dist_req = 30
+        elif index == 1:
+            dist_req = 60
+        elif index == 2:
+            dist_req = 60
+        else:
+            dist_req = 20
+        matches = list(filter(lambda match: match.distance < 20, all_matches))
+        # if len(matches) > 10:
+        #     matches = matches[:10]
+
+        # if len(matches) < 6:
+        #     return False
+
+        # set_image(outImg, 1, image_id)
+        # 0 -> 30, 15 matches
+        # 1 -> 35, 3 matches
+        # 2 -> 25, 5 matches
+        # 3 -> 25, 3 matches
+        if index == 0:
+            match_req = 15
+        if index == 1:
+            match_req = 2
+        elif index == 2:
+            match_req = 3
+        else:
+            match_req = 3
+        voting[index] = len(matches) >= match_req
+
     outImg = np.zeros((1000,1000,3), np.uint8)
-    outImg = cv2.drawMatches(SSG, ssgkp, image, kp, matches, outImg=outImg, flags=0)
+    outImg = cv2.drawMatches(SSG[index], ssgkp[index], image, kp, matches, outImg=outImg, flags=0)
     cv2.imshow('matching!', outImg)
-    cv2.waitKey(200)
+        
+    # cv2.destroyAllWindows()
     # classify image based on match count
-    if np.sum(y) > 10:
+    vote_count = 0
+    for b in voting:
+        if b:
+            vote_count += 1
+    print(voting)
+    if vote_count >= 2:
         # publish true on stopsign channel
         # pub_buddy.publish(Bool(True))
+        print('stopsign!')
+        cv2.waitKey(int(300))
         return True
     else:
         # publish false on stopsign channel
         # pub_buddy.publish(Bool(False))
+        print('meh')
+        cv2.waitKey(int(300))
         return False
 
-def colorize_image(img, classifier, reducer):
+def colorize_image(img, image_id, classifier, reducer):
     # else make edge green
-    has_stopsign = classify_image(img, classifier, reducer)
+    has_stopsign = classify_image(img, image_id, classifier, reducer)
 
     top_left = (0,0)
     bottom_right = (img.shape[1], img.shape[0])
@@ -122,7 +169,7 @@ def colorize_image(img, classifier, reducer):
 
 
 def set_image(img, video_id, image_id):
-    filename = OUT_BASE_STRING % (video_id, image_id,)
+    filename = OUT_BASE_STRING % (image_id,)
     cv2.imwrite(filename, img)
 
 if __name__ == '__main__':
@@ -130,15 +177,17 @@ if __name__ == '__main__':
     classifier = joblib.load(KLASSIFIER_PATH)  
     reducer = joblib.load(REDUCER_PATH)
     print('loaded')
-    for video_id in range(01, 25):
+    for video_id in range(1, 2):
         print('video')
-        for image_id in range(start_image_id, end_image_id): # end_image_id):
+        for image_id in range(start_image_id, end_image_id, 2): # end_image_id):
             if image_id % 1 == 0:
-                print('%02d %d / %d' % (video_id, image_id, end_image_id,))
-            og_img = get_image(video_id, image_id)
+                print('%02d %d / %d' % (1, image_id, end_image_id,))
+            og_img = get_image(1, image_id)
             if og_img is None:
                 print('og_img is None')
                 continue
-            print('colorize image')
-            noise_img = colorize_image(og_img, classifier, reducer)
-            set_image(noise_img, video_id, image_id)
+            else:
+                og_img = og_img[:500]
+            # print('colorize image')
+            noise_img = colorize_image(og_img, image_id, classifier, reducer)
+            # set_image(noise_img, 1, image_id)
