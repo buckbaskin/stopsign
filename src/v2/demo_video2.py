@@ -46,7 +46,7 @@ ssgdes = []
 for i in range(4):
     SSG.append(cv2.imread(GREY_STOPSIGN % i, cv2.IMREAD_COLOR))
     if SSG[-1] is None:
-        print('Image not loaded')
+        print('Image not loaded %d %s' % (i, GREY_STOPSIGN % i,))
         import sys
         sys.exit(1)
     ssgorb.append(cv2.ORB(nfeatures = 500))
