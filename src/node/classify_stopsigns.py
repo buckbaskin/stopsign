@@ -88,28 +88,16 @@ def classify_image(image):
         if index == 0:
             dist_req = 33.5 # 40
         elif index == 1:
-<<<<<<< HEAD
-            dist_req = 40
-        elif index == 2:
-            dist_req = 40
-=======
             dist_req = 63
         elif index == 2:
             dist_req = 48 # 51
->>>>>>> 40cef9777241847c2242d3d2f1299881d0b0699e
         else:
             dist_req = 27
         matches = list(filter(lambda match: match.distance < dist_req, all_matches))
         if index == 0:
-<<<<<<< HEAD
-            match_req = 10
-        if index == 1:
-            match_req = 3
-=======
             match_req = 4
         if index == 1:
             match_req = 1
->>>>>>> 40cef9777241847c2242d3d2f1299881d0b0699e
         elif index == 2:
             match_req = 2
         else:
