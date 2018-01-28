@@ -67,6 +67,10 @@ buckfm = cv2.BFMatcher(cv2.NORM_HAMMING)
 orb = cv2.ORB(nfeatures = NUM_FEATURES, edgeThreshold=5)
 # orb = cv2.ORB_create(nfeatures = NUM_FEATURES, edgeThreshold=5)
 
+g_dist_data = { 0: { 0: [], 1: [], 2: [] }, 1: { 0: [], 1: [], 2: [] },
+                2: { 0: [], 1: [], 2: [] }, 3: { 0: [], 1: [], 2: [] } }
+g_frame_count = 0
+g_stopsign_count = 0
 
 def classify_image(image):
     kp = orb.detect(image, None)
@@ -77,27 +81,39 @@ def classify_image(image):
     for index, precompdes in enumerate(ssgdes):
         all_matches = buckfm.match(precompdes, des)
         all_matches.sort(key= lambda match: match.distance)
-	print(all_matches[0].distance)
+        # print(all_matches[0].distance)
+        for i in range(3):
+            g_dist_data[index][i].append(all_matches[i].distance)
 
         if index == 0:
-            dist_req = 30
+            dist_req = 33.5 # 40
         elif index == 1:
+<<<<<<< HEAD
             dist_req = 40
         elif index == 2:
             dist_req = 40
+=======
+            dist_req = 63
+        elif index == 2:
+            dist_req = 48 # 51
+>>>>>>> 40cef9777241847c2242d3d2f1299881d0b0699e
         else:
-            dist_req = 20
+            dist_req = 27
         matches = list(filter(lambda match: match.distance < dist_req, all_matches))
-	print('list %d' % (len(matches),))
-        
         if index == 0:
+<<<<<<< HEAD
             match_req = 10
         if index == 1:
             match_req = 3
+=======
+            match_req = 4
+        if index == 1:
+            match_req = 1
+>>>>>>> 40cef9777241847c2242d3d2f1299881d0b0699e
         elif index == 2:
-            match_req = 3
+            match_req = 2
         else:
-            match_req = 3
+            match_req = 1
         voting[index] = len(matches) >= match_req
 
     vote_count = 0
@@ -105,15 +121,19 @@ def classify_image(image):
         if b:
             vote_count += 1
     print(voting)
-    if vote_count >= 1:
+    global g_frame_count
+    global g_stopsign_count
+    g_frame_count = g_frame_count + 1
+    if vote_count >= 2:
+        g_stopsign_count = g_stopsign_count + 1
         # publish true on stopsign channel
         pub_buddy.publish(Bool(True))
-        print('stopsign!')
+        print('YES! %d of %d' % (g_stopsign_count, g_frame_count,))
         return True
     else:
         # publish false on stopsign channel
         pub_buddy.publish(Bool(False))
-        print('meh')
+        print('NO! %d of %d' % (g_stopsign_count, g_frame_count,))
         return False
 
 
@@ -130,3 +150,8 @@ if __name__ == '__main__':
         else:
             print('no CV image recieved in last cycle')
         rate.sleep()
+    for img_id in range(4):
+        print('stats for img %d' % (img_id,))
+        for dist_order in range(3):
+            arr = np.array(g_dist_data[img_id][dist_order])
+            print('min %.2f\tmax %.2f\tmean %.2f\tstd %.2f' % (np.min(arr),np.max(arr),np.mean(arr),np.std(arr),))
